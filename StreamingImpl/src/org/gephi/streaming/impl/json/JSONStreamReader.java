@@ -204,8 +204,14 @@ public class JSONStreamReader extends StreamReader {
             while (keys.hasNext()) {
                 String key = keys.next();
                 if (Fields.ID.value().equals(key)) continue;
-                JSONObject gObjs = (JSONObject)jo.get(key);
-                parse(key, gObjs, id);
+                
+                Object gObjs = jo.get(key);
+                if (gObjs instanceof JSONObject) {
+                    parse(key, (JSONObject)gObjs, id);
+                } else {
+                    throw new IllegalArgumentException("Invalid attribute: "+key);
+                    //logger.log(Level.WARNING, "JSON attribute ignored: \"{0}\"", new String[]{key});
+                }
             }
             
             if (report!=null) {
