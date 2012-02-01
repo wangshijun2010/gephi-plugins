@@ -386,9 +386,9 @@ public class GraphUpdaterEventHandler implements GraphEventHandler {
             case COLOR:
                 Integer color = (value!=null)?Integer.decode(value.toString()):0;
                 int i = color.intValue();
-                node.getNodeData().setR((i >> 16) & 0xFF);
-                node.getNodeData().setG((i >> 8) & 0xFF);
-                node.getNodeData().setB(i & 0xFF);
+                node.getNodeData().setR(((i >> 16) & 0xFF)/255.f);
+                node.getNodeData().setG(((i >> 8) & 0xFF)/255.f);
+                node.getNodeData().setB((i & 0xFF)/255.f);
                 break;
             case SIZE:
                 float size = Float.valueOf(value.toString());
@@ -460,9 +460,9 @@ public class GraphUpdaterEventHandler implements GraphEventHandler {
             case COLOR:
                 Integer color = (value!=null)?Integer.decode(value.toString()):0;
                 int i = color.intValue();
-                edge.getEdgeData().setR((i >> 16) & 0xFF);
-                edge.getEdgeData().setG((i >> 8) & 0xFF);
-                edge.getEdgeData().setB(i & 0xFF);
+                edge.getEdgeData().setR(((i >> 16) & 0xFF)/255.f);
+                edge.getEdgeData().setG(((i >> 8) & 0xFF)/255.f);
+                edge.getEdgeData().setB((i & 0xFF)/255.f);
                 break;
         }
     }
