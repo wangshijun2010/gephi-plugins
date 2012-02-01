@@ -41,12 +41,13 @@ Portions Copyrighted 2011 Gephi Consortium.
  */
 package org.gephi.streaming.server.impl;
 
+import org.gephi.data.attributes.api.AttributeController;
+import org.gephi.data.attributes.api.AttributeModel;
+import org.gephi.dynamic.api.DynamicModel;
 import org.gephi.graph.api.Graph;
-import org.gephi.graph.api.Node;
-import org.gephi.graph.api.NodeIterable;
-import org.gephi.graph.api.NodeIterator;
 import org.gephi.streaming.api.CompositeGraphEventHandler;
 import org.gephi.streaming.api.GraphEventHandler;
+import org.openide.util.Lookup;
 
 /**
  * @author panisson
@@ -57,14 +58,11 @@ public class GraphBufferedEventHandler extends CompositeGraphEventHandler {
     private GraphWriter graphWriter;
 
     public GraphBufferedEventHandler(Graph graph) {
-        Node firstNode = null;
-        NodeIterable iterable = graph.getNodes();
-        NodeIterator iterator = iterable.iterator();
-        if (iterator.hasNext()){
-            firstNode = iterator.next();
-            iterable.doBreak();
-        }
-        if (firstNode!=null && firstNode.getNodeData().getAttributes().getValue("dynamicrange")!=null) {
+        
+        // check if graph is dynamic
+        AttributeModel attributeModel = Lookup.getDefault().lookup(AttributeController.class)
+                .getModel(graph.getGraphModel().getWorkspace());
+        if (attributeModel.getNodeTable().hasColumn(DynamicModel.TIMEINTERVAL_COLUMN)) {
             this.graphWriter = new DynamicGraphWriter(graph, false);
         } else {
             this.graphWriter = new GraphWriter(graph, true);

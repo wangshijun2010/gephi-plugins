@@ -51,6 +51,7 @@ import org.gephi.data.attributes.api.AttributeRow;
 import org.gephi.data.attributes.api.AttributeValue;
 import org.gephi.data.attributes.type.TimeInterval;
 import org.gephi.data.properties.PropertiesColumn;
+import org.gephi.dynamic.api.DynamicModel;
 import org.gephi.graph.api.Edge;
 import org.gephi.graph.api.Graph;
 import org.gephi.graph.api.Node;
@@ -88,7 +89,7 @@ public class DynamicGraphWriter extends GraphWriter {
             Map<Double, List<Object>> remotion = new HashMap<Double, List<Object>>();
             
             for (Node node: graph.getNodes()) {
-                TimeInterval range = (TimeInterval)node.getNodeData().getAttributes().getValue("dynamicrange");
+                TimeInterval range = (TimeInterval)node.getNodeData().getAttributes().getValue(DynamicModel.TIMEINTERVAL_COLUMN);
 
                 List<Double[]> values = range.getValues();
                 for(Double[] rangeValue: values) {
@@ -119,7 +120,7 @@ public class DynamicGraphWriter extends GraphWriter {
             }
 
             for (Edge edge: graph.getEdges()) {
-                TimeInterval range = (TimeInterval)edge.getEdgeData().getAttributes().getValue("dynamicrange");
+                TimeInterval range = (TimeInterval)edge.getEdgeData().getAttributes().getValue(DynamicModel.TIMEINTERVAL_COLUMN);
 
                 List<Double[]> values = range.getValues();
                 for(Double[] rangeValue: values) {
