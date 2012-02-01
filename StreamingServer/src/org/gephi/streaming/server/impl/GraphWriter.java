@@ -64,14 +64,14 @@ import org.gephi.streaming.api.event.EventType;
  */
 public class GraphWriter extends CompositeGraphEventHandler {
     
-    private Graph graph;
-    private boolean sendVizData;
-    private final GraphEventBuilder eventBuilder;
+    protected final Graph graph;
+    protected final boolean sendVizData;
+    protected final GraphEventBuilder eventBuilder;
 
     public GraphWriter(Graph graph, boolean sendVizData) {
         this.graph = graph;
         this.sendVizData = sendVizData;
-        eventBuilder = new GraphEventBuilder(this);
+        this.eventBuilder = new GraphEventBuilder(this);
     }
     
     public void writeGraph(GraphEventHandler operationSupport) {
