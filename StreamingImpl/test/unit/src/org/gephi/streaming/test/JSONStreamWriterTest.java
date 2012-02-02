@@ -218,22 +218,31 @@ public class JSONStreamWriterTest {
     
     @Test
     public void testWriteEventTimestamp() {
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        StreamWriterFactory factory = Lookup.getDefault().lookup(StreamWriterFactory.class);
-        StreamWriter streamWriter = factory.createStreamWriter(streamType, out);
         GraphEventBuilder eventBuilder = new GraphEventBuilder(this);
-        
-        streamWriter.startStream();
         GraphEvent event = eventBuilder.graphEvent(ElementType.NODE, EventType.ADD, "A", null);
         event.setTimestamp(999.87);
-        streamWriter.handleGraphEvent(event);
-        streamWriter.endStream();
+        String result = writeEvent(event);
         
         try {
-            JSONObject jo = new JSONObject(new String(out.toByteArray()));
+            JSONObject jo = new JSONObject(result);
             assertTrue(jo.has(JSONConstants.Fields.T.value()));
             Object t = jo.get(JSONConstants.Fields.T.value());
             assertTrue(t.equals(999.87));
+            
+        } catch (JSONException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    
+    @Test
+    public void testCheckNullTimestamp() {
+        GraphEventBuilder eventBuilder = new GraphEventBuilder(this);
+        GraphEvent event = eventBuilder.graphEvent(ElementType.NODE, EventType.ADD, "A", null);
+        String result = writeEvent(event);
+        
+        try {
+            JSONObject jo = new JSONObject(result);
+            assertTrue(!jo.has(JSONConstants.Fields.T.value()));
             
         } catch (JSONException e) {
             throw new RuntimeException(e);

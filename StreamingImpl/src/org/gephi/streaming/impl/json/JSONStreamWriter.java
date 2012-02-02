@@ -131,12 +131,14 @@ public class JSONStreamWriter extends StreamWriter {
             
             if (o != null) {
                 
-                try {
-                    o.put(JSONConstants.Fields.T.value(), event.getTimestamp());
-                } catch (JSONException e) {
-                    logger.log(Level.WARNING, "Unable to write timestamp "
-                            + "into JSON object '{0}': {1}",
-                            new Object[]{o.toString(), e.getMessage()});
+                if (event.getTimestamp() != null) {
+                    try {
+                        o.put(JSONConstants.Fields.T.value(), event.getTimestamp());
+                    } catch (JSONException e) {
+                        logger.log(Level.WARNING, "Unable to write timestamp "
+                                + "into JSON object '{0}': {1}",
+                                new Object[]{o.toString(), e.getMessage()});
+                    }
                 }
                 
                 out.print(o.toString() + EOL);
