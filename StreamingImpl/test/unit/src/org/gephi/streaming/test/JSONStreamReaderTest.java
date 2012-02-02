@@ -292,6 +292,23 @@ public class JSONStreamReaderTest {
         assertEquals(ElementEvent.class, event.getClass());
         assertEquals("A", ((ElementEvent)event).getElementId());
     }
+    
+    @Test
+    public void testReadEventTimestamp() throws IOException {
+        HeapEventHandler handler = new HeapEventHandler();
+
+        StreamReaderFactory factory = Lookup.getDefault().lookup(StreamReaderFactory.class);
+        GraphEventBuilder eventBuilder = new GraphEventBuilder(this);
+        StreamReader streamReader = factory.createStreamReader(streamType, handler, eventBuilder);
+        
+        String evstr = "{\"t\":999,\"an\":{\"A\":{\"label\":\"Streaming Node A\"}}}\n\r";
+        ByteArrayInputStream bais = new ByteArrayInputStream(evstr.getBytes());
+
+        streamReader.processStream(bais);
+        GraphEvent event = handler.getGraphEvent();
+        assertNotNull(event);
+        assertEquals(Double.valueOf(999.), event.getTimestamp());
+    }
 
     private class HeapEventHandler implements GraphEventHandler {
 

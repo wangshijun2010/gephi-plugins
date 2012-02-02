@@ -41,6 +41,7 @@ Portions Copyrighted 2011 Gephi Consortium.
  */
 package org.gephi.streaming.test;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import static org.junit.Assert.*;
 
@@ -50,11 +51,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.gephi.streaming.api.event.GraphEventBuilder;
+import org.gephi.streaming.api.StreamReader;
+import org.gephi.streaming.api.StreamReaderFactory;
 import org.gephi.streaming.api.StreamWriter;
 import org.gephi.streaming.api.StreamWriterFactory;
 import org.gephi.streaming.api.event.ElementType;
 import org.gephi.streaming.api.event.EventType;
 import org.gephi.streaming.api.event.GraphEvent;
+import org.gephi.streaming.impl.json.parser.JSONConstants;
+import org.gephi.streaming.impl.json.parser.JSONException;
+import org.gephi.streaming.impl.json.parser.JSONObject;
 import org.junit.Test;
 import org.openide.util.Lookup;
 
@@ -75,6 +81,106 @@ public class JSONStreamWriterTest {
         StreamWriterFactory factory = Lookup.getDefault().lookup(StreamWriterFactory.class);
         StreamWriter processor = factory.createStreamWriter(streamType, new ByteArrayOutputStream());
         assertNotNull(processor);
+    }
+    
+    private String writeEvent(GraphEvent event) {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        StreamWriterFactory factory = Lookup.getDefault().lookup(StreamWriterFactory.class);
+        StreamWriter streamWriter = factory.createStreamWriter(streamType, out);
+        GraphEventBuilder eventBuilder = new GraphEventBuilder(this);
+        
+        streamWriter.startStream();
+        streamWriter.handleGraphEvent(event);
+        streamWriter.endStream();
+        
+        return new String(out.toByteArray());
+    }
+    
+    @Test
+    public void testWriteSimpleEvent() {
+        GraphEventBuilder eventBuilder = new GraphEventBuilder(this);
+        Map<String,Object> attributes = new HashMap<String, Object>();
+        attributes.put("size", 2);
+        GraphEvent event = eventBuilder.graphEvent(ElementType.NODE, EventType.ADD, "A", attributes);
+        String result = writeEvent(event);
+        
+        try {
+            JSONObject jo = new JSONObject(result);
+            assertTrue(jo.has(JSONConstants.Types.AN.value()));
+            Object o = jo.get(JSONConstants.Types.AN.value());
+            assertTrue(o instanceof JSONObject);
+            jo = (JSONObject)o;
+            assertTrue(jo.has("A"));
+            o = jo.get("A");
+            assertTrue(o instanceof JSONObject);
+            jo = (JSONObject)o;
+            assertTrue(jo.has("size"));
+            o = jo.get("size");
+            assertTrue(o.equals(2));
+            
+        } catch (JSONException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    
+    @Test
+    public void testWriteAN() {
+        GraphEventBuilder eventBuilder = new GraphEventBuilder(this);
+        String result = writeEvent(eventBuilder.graphEvent(ElementType.NODE, EventType.ADD, "A", null));
+        
+        try {
+            JSONObject jo = new JSONObject(result);
+            assertTrue(jo.has(JSONConstants.Types.AN.value()));
+            Object o = jo.get(JSONConstants.Types.AN.value());
+            assertTrue(o instanceof JSONObject);
+            jo = (JSONObject)o;
+            assertTrue(jo.has("A"));
+            o = jo.get("A");
+            assertTrue(o instanceof JSONObject);
+            
+        } catch (JSONException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    
+    @Test
+    public void testWriteCN() {
+        GraphEventBuilder eventBuilder = new GraphEventBuilder(this);
+        String result = writeEvent(eventBuilder.graphEvent(ElementType.NODE, EventType.CHANGE, "A", null));
+        
+        try {
+            JSONObject jo = new JSONObject(result);
+            assertTrue(jo.has(JSONConstants.Types.CN.value()));
+            Object o = jo.get(JSONConstants.Types.CN.value());
+            assertTrue(o instanceof JSONObject);
+            jo = (JSONObject)o;
+            assertTrue(jo.has("A"));
+            o = jo.get("A");
+            assertTrue(o instanceof JSONObject);
+            
+        } catch (JSONException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    
+    @Test
+    public void testWriteDN() {
+        GraphEventBuilder eventBuilder = new GraphEventBuilder(this);
+        String result = writeEvent(eventBuilder.graphEvent(ElementType.NODE, EventType.REMOVE, "A", null));
+        
+        try {
+            JSONObject jo = new JSONObject(result);
+            assertTrue(jo.has(JSONConstants.Types.DN.value()));
+            Object o = jo.get(JSONConstants.Types.DN.value());
+            assertTrue(o instanceof JSONObject);
+            jo = (JSONObject)o;
+            assertTrue(jo.has("A"));
+            o = jo.get("A");
+            assertTrue(o instanceof JSONObject);
+            
+        } catch (JSONException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Test
@@ -108,6 +214,30 @@ public class JSONStreamWriterTest {
             streamWriter.handleGraphEvent(event);
         }
         streamWriter.endStream();
+    }
+    
+    @Test
+    public void testWriteEventTimestamp() {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        StreamWriterFactory factory = Lookup.getDefault().lookup(StreamWriterFactory.class);
+        StreamWriter streamWriter = factory.createStreamWriter(streamType, out);
+        GraphEventBuilder eventBuilder = new GraphEventBuilder(this);
+        
+        streamWriter.startStream();
+        GraphEvent event = eventBuilder.graphEvent(ElementType.NODE, EventType.ADD, "A", null);
+        event.setTimestamp(999.87);
+        streamWriter.handleGraphEvent(event);
+        streamWriter.endStream();
+        
+        try {
+            JSONObject jo = new JSONObject(new String(out.toByteArray()));
+            assertTrue(jo.has(JSONConstants.Fields.T.value()));
+            Object t = jo.get(JSONConstants.Fields.T.value());
+            assertTrue(t.equals(999.87));
+            
+        } catch (JSONException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private class EventFactory {

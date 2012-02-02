@@ -253,7 +253,7 @@ public class DynamicGraphWriter extends GraphWriter {
                 List<GraphEvent> createdAt = creation.get(ts);
                 if (createdAt!=null) {
                     for (GraphEvent e: createdAt) {
-                        //e.getAttributes().put("start", ts);
+                        e.setTimestamp(ts);
                         operationSupport.handleGraphEvent(e);
                     }
                 }
@@ -261,7 +261,7 @@ public class DynamicGraphWriter extends GraphWriter {
                 List<GraphEvent> changedAt = changing.get(ts);
                 if (changedAt!=null) {
                     for (GraphEvent e: changedAt) {
-                        //e.getAttributes().put("change", ts);
+                        e.setTimestamp(ts);
                         operationSupport.handleGraphEvent(e);
                     }
                 }
@@ -271,7 +271,7 @@ public class DynamicGraphWriter extends GraphWriter {
                 List<GraphEvent> removedAt = remotion.get(ts);
                 if (removedAt!=null) {
                     for (GraphEvent e: removedAt) {
-                        //e.getAttributes().put("end", ts);
+                        e.setTimestamp(ts);
                         operationSupport.handleGraphEvent(e);
                     }
                 }
