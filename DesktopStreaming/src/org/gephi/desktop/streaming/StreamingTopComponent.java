@@ -88,9 +88,6 @@ public final class StreamingTopComponent extends TopComponent implements Explore
         setToolTipText(NbBundle.getMessage(StreamingTopComponent.class, "HINT_StreamingTopComponent"));
         setIcon(ImageUtilities.loadImage(ICON_PATH, true));
 
-        controller = Lookup.getDefault().lookup(StreamingUIController.class);
-        controller.setTopComponent(this);
-
         clientMasterChildren = new Children.Array();
 
         associateLookup(ExplorerUtils.createLookup(mgr, getActionMap()));
@@ -102,6 +99,9 @@ public final class StreamingTopComponent extends TopComponent implements Explore
             }
         };
         mgr.setRootContext(topnode);
+        
+        controller = Lookup.getDefault().lookup(StreamingUIController.class);
+        controller.setTopComponent(this);
     }
 
     private class StreamingTreeView extends BeanTreeView {
