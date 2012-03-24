@@ -48,6 +48,7 @@ public class JSONConstants {
     public enum Fields {
 
         ID("id"),
+        T("t"), //timestamp
         SOURCE("source"),
         TARGET("target"),
         DIRECTED("directed");

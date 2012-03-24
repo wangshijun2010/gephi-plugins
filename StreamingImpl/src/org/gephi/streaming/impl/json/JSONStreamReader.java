@@ -199,13 +199,26 @@ public class JSONStreamReader extends StreamReader {
                 id = jo.getString(Fields.ID.value());
             }
             
+            Double t = null;
+            if (jo.has(Fields.T.value())) {
+                String tstr = jo.getString(Fields.T.value());
+                t = Double.valueOf(tstr);
+            }
+            
             Iterator<String> keys = jo.keys();
             
             while (keys.hasNext()) {
                 String key = keys.next();
                 if (Fields.ID.value().equals(key)) continue;
-                JSONObject gObjs = (JSONObject)jo.get(key);
-                parse(key, gObjs, id);
+                if (Fields.T.value().equals(key)) continue;
+                
+                Object gObjs = jo.get(key);
+                if (gObjs instanceof JSONObject) {
+                    parse(key, (JSONObject)gObjs, id, t);
+                } else {
+                    throw new IllegalArgumentException("Invalid attribute: "+key);
+                    //logger.log(Level.WARNING, "JSON attribute ignored: \"{0}\"", new String[]{key});
+                }
             }
             
             if (report!=null) {
@@ -232,7 +245,7 @@ public class JSONStreamReader extends StreamReader {
         }
     }
     
-    private void parse(String type, JSONObject gObjs, String eventId) throws JSONException {
+    private void parse(String type, JSONObject gObjs, String eventId, Double t) throws JSONException {
 
         Types eventType = Types.fromString(type);
         
@@ -312,6 +325,9 @@ public class JSONStreamReader extends StreamReader {
             if (event != null) {
                 if (eventId!=null) {
                     event.setEventId(eventId);
+                }
+                if (t!=null) {
+                    event.setTimestamp(t);
                 }
                 handler.handleGraphEvent(event);
             }

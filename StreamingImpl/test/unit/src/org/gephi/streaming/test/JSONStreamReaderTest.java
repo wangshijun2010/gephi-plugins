@@ -41,6 +41,7 @@ Portions Copyrighted 2011 Gephi Consortium.
  */
 package org.gephi.streaming.test;
 
+import java.io.ByteArrayInputStream;
 import org.gephi.streaming.api.event.GraphEvent;
 import static org.junit.Assert.*;
 
@@ -222,6 +223,91 @@ public class JSONStreamReaderTest {
             t.join(1000);
         } catch (InterruptedException ex) { }
         assertTrue(t.getState() == t.getState().TERMINATED);
+    }
+    
+    @Test
+    public void testIgnoreInvalidAttrType() throws IOException {
+        HeapEventHandler handler = new HeapEventHandler();
+
+        StreamReaderFactory factory = Lookup.getDefault().lookup(StreamReaderFactory.class);
+        GraphEventBuilder eventBuilder = new GraphEventBuilder(this);
+        StreamReader streamReader = factory.createStreamReader(streamType, handler, eventBuilder);
+        
+        String evstr = "{\"ivalid\":0,\"an\":{\"A\":{\"label\":\"Streaming Node A\"}}}\n\r";
+        ByteArrayInputStream bais = new ByteArrayInputStream(evstr.getBytes());
+        
+        boolean raisedException = false;
+        try {
+            streamReader.processStream(bais);
+        } catch (IllegalArgumentException e) {
+            raisedException = true;
+        }
+        assertTrue(raisedException);
+
+//        streamReader.processStream(bais);
+//        GraphEvent event = handler.getGraphEvent();
+//        assertNotNull(event);
+//        assertEquals(EventType.ADD, event.getEventType());
+//        assertEquals(ElementType.NODE, event.getElementType());
+//        assertEquals(ElementEvent.class, event.getClass());
+//        assertEquals("A", ((ElementEvent)event).getElementId());
+    }
+    
+    @Test
+    public void testIgnoreInvalidAttrName() throws IOException {
+        HeapEventHandler handler = new HeapEventHandler();
+
+        StreamReaderFactory factory = Lookup.getDefault().lookup(StreamReaderFactory.class);
+        GraphEventBuilder eventBuilder = new GraphEventBuilder(this);
+        StreamReader streamReader = factory.createStreamReader(streamType, handler, eventBuilder);
+        
+        String evstr = "{\"ivalid\":{\"A\":{\"label\":\"Streaming Node A\"}},\"an\":{\"A\":{\"label\":\"Streaming Node A\"}}}\n\r";
+        ByteArrayInputStream bais = new ByteArrayInputStream(evstr.getBytes());
+
+        boolean raisedException = false;
+        try {
+            streamReader.processStream(bais);
+        } catch (IllegalArgumentException e) {
+            raisedException = true;
+        }
+        assertTrue(raisedException);
+    }
+    
+    @Test
+    public void testReadEventId() throws IOException {
+        HeapEventHandler handler = new HeapEventHandler();
+
+        StreamReaderFactory factory = Lookup.getDefault().lookup(StreamReaderFactory.class);
+        GraphEventBuilder eventBuilder = new GraphEventBuilder(this);
+        StreamReader streamReader = factory.createStreamReader(streamType, handler, eventBuilder);
+        
+        String evstr = "{\"id\":0,\"an\":{\"A\":{\"label\":\"Streaming Node A\"}}}\n\r";
+        ByteArrayInputStream bais = new ByteArrayInputStream(evstr.getBytes());
+
+        streamReader.processStream(bais);
+        GraphEvent event = handler.getGraphEvent();
+        assertNotNull(event);
+        assertEquals(EventType.ADD, event.getEventType());
+        assertEquals(ElementType.NODE, event.getElementType());
+        assertEquals(ElementEvent.class, event.getClass());
+        assertEquals("A", ((ElementEvent)event).getElementId());
+    }
+    
+    @Test
+    public void testReadEventTimestamp() throws IOException {
+        HeapEventHandler handler = new HeapEventHandler();
+
+        StreamReaderFactory factory = Lookup.getDefault().lookup(StreamReaderFactory.class);
+        GraphEventBuilder eventBuilder = new GraphEventBuilder(this);
+        StreamReader streamReader = factory.createStreamReader(streamType, handler, eventBuilder);
+        
+        String evstr = "{\"t\":999,\"an\":{\"A\":{\"label\":\"Streaming Node A\"}}}\n\r";
+        ByteArrayInputStream bais = new ByteArrayInputStream(evstr.getBytes());
+
+        streamReader.processStream(bais);
+        GraphEvent event = handler.getGraphEvent();
+        assertNotNull(event);
+        assertEquals(Double.valueOf(999.), event.getTimestamp());
     }
 
     private class HeapEventHandler implements GraphEventHandler {

@@ -58,6 +58,7 @@ public class GraphEvent extends EventObject {
     protected final EventType eventType;
     protected final ElementType elementType;
     protected String eventId;
+    protected Double timestamp = null;
     protected final Map<String, Object> attributes;
 
     /**
@@ -135,5 +136,13 @@ public class GraphEvent extends EventObject {
     public Map<String, Object> getAttributes() {
         if (attributes==null) return null;
         return Collections.unmodifiableMap(attributes);
+    }
+
+    public void setTimestamp(Double timestamp) {
+        this.timestamp = timestamp;
+    }
+    
+    public Double getTimestamp() {
+        return this.timestamp;
     }
 }

@@ -138,10 +138,13 @@ public class StreamingUIController {
 
     public void setTopComponent(StreamingTopComponent component) {
         this.component = component;
+        refreshModel();
     }
 
     public void refreshModel() {
-        component.refreshModel(model);
+        if (model != null) {
+            component.refreshModel(model);
+        }
     }
     
     public StreamingModel getStreamingModel() {
