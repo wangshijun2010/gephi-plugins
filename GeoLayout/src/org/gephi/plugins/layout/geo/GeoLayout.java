@@ -60,6 +60,7 @@ import org.gephi.layout.spi.Layout;
 import org.gephi.layout.spi.LayoutBuilder;
 import org.gephi.layout.spi.LayoutProperty;
 import org.gephi.ui.propertyeditor.NodeColumnNumbersEditor;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -74,6 +75,8 @@ public class GeoLayout implements Layout {
     private DynamicModel dynamicModel;
     private boolean cancel;
     //Params
+    private boolean looping = false;
+    private int loopingDelay = 50;//ms
     private double focal = 150;
     private double scale = 1000;
     private boolean centered = true;
@@ -452,7 +455,16 @@ public class GeoLayout implements Layout {
 
         graph.readUnlock();
 
-        cancel = true;
+        if (!looping) {
+            cancel = true;
+        } else {
+            try {
+                //Sleep some time
+                Thread.sleep(loopingDelay);
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
     }
 
     public double getDoubleValue(Node node, AttributeColumn column, TimeInterval timeInterval) {
@@ -510,6 +522,12 @@ public class GeoLayout implements Layout {
                     GEOLAYOUT,
                     NbBundle.getMessage(GeoLayout.class, "GeoLayout.centered.desc"),
                     "isCentered", "setCentered"));
+            properties.add(LayoutProperty.createProperty(
+                    this, Boolean.class,
+                    NbBundle.getMessage(GeoLayout.class, "GeoLayout.looping.name"),
+                    GEOLAYOUT,
+                    NbBundle.getMessage(GeoLayout.class, "GeoLayout.looping.desc"),
+                    "isLooping", "setLooping"));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -523,6 +541,14 @@ public class GeoLayout implements Layout {
 
     public void setCentered(Boolean centered) {
         this.centered = centered;
+    }
+
+    public Boolean isLooping() {
+        return looping;
+    }
+
+    public void setLooping(Boolean looping) {
+        this.looping = looping;
     }
 
     public String getProjection() {
