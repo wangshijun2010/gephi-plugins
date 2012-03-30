@@ -62,7 +62,8 @@ public class GraphBufferedEventHandler extends CompositeGraphEventHandler {
         // check if graph is dynamic
         AttributeModel attributeModel = Lookup.getDefault().lookup(AttributeController.class)
                 .getModel(graph.getGraphModel().getWorkspace());
-        if (attributeModel.getNodeTable().hasColumn(DynamicModel.TIMEINTERVAL_COLUMN)) {
+        if (attributeModel.getNodeTable().hasColumn(DynamicModel.TIMEINTERVAL_COLUMN)
+            && attributeModel.getEdgeTable().hasColumn(DynamicModel.TIMEINTERVAL_COLUMN)) {
             this.graphWriter = new DynamicGraphWriter(graph, false);
         } else {
             this.graphWriter = new GraphWriter(graph, true);
