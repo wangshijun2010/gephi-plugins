@@ -41,12 +41,15 @@ Portions Copyrighted 2011 Gephi Consortium.
  */
 package org.gephi.streaming.server.impl.jetty;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Enumeration;
 
 import javax.servlet.http.HttpServletRequest;
 import org.gephi.streaming.server.Request;
+import org.openide.util.Exceptions;
 
 /**
  * @author panisson
@@ -57,16 +60,35 @@ public class RequestWrapper implements Request {
     public final static String SOCKET_REFERENCE_KEY = "SOCKET_REFERENCE_KEY";
     
     private HttpServletRequest request;
+    private byte[] data;
     
     public RequestWrapper(HttpServletRequest request) {
-        this.request = request;
+        InputStream inputStream = null;
+        try {
+            this.request = request;
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            inputStream = request.getInputStream();
+            int read;
+            while ((read = inputStream.read())!=-1) {
+                baos.write(read);
+            }
+            data = baos.toByteArray();
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        } finally {
+            try {
+                inputStream.close();
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
     }
 
     /* (non-Javadoc)
      * @see org.gephi.streaming.server.impl.Request#getInputStream()
      */
     public InputStream getInputStream() throws IOException {
-        return request.getInputStream();
+        return new ByteArrayInputStream(data); //request.getInputStream();
     }
 
     /* (non-Javadoc)

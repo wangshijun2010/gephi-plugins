@@ -86,7 +86,7 @@ import org.simpleframework.util.buffer.FileAllocator;
  * @author panisson
  *
  */
-@ServiceProvider(service = StreamingServer.class)
+//@ServiceProvider(service = StreamingServer.class)
 public class StreamingServerImpl implements StreamingServer {
     
     private static final Logger logger =  Logger.getLogger(StreamingServerImpl.class.getName());

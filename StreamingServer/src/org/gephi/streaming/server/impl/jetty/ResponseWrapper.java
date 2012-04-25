@@ -61,6 +61,7 @@ public class ResponseWrapper implements Response {
     
     private final HttpServletResponse response;
     private SocketChannel channel;
+    private boolean isClosed = false;
     
     /**
      * Creates a wrapper using this response
@@ -105,7 +106,7 @@ public class ResponseWrapper implements Response {
      * @see org.gephi.streaming.server.impl.Response#setText(java.lang.String)
      */
     public void setText(String arg0) {
-        throw new UnsupportedOperationException();
+        //throw new UnsupportedOperationException();
     }
 
     @Override
@@ -122,6 +123,10 @@ public class ResponseWrapper implements Response {
     @Override
     public void commit() throws IOException {
         response.flushBuffer();
+    }
+    
+    public boolean isClosed() {
+        return isClosed;
     }
 
     /**
@@ -141,22 +146,23 @@ public class ResponseWrapper implements Response {
 
         @Override
         public void write(int b) throws IOException {
-            if (!channel.isConnected()) {
-                throw new SocketException("Socket closed");
-            }
+//            if (!channel.isConnected()) {
+//                throw new SocketException("Socket closed");
+//            }
             out.write(b);
         }
 
         @Override
         public void close() throws IOException {
             out.close();
+            isClosed = true;
         }
 
         @Override
         public void flush() throws IOException {
-            if (!channel.isConnected()) {
-                throw new SocketException("Socket closed");
-            }
+//            if (!channel.isConnected()) {
+//                throw new SocketException("Socket closed");
+//            }
             out.flush();
         }
 

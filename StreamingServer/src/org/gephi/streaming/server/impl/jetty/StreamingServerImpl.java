@@ -65,6 +65,8 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import org.eclipse.jetty.continuation.Continuation;
+import org.eclipse.jetty.continuation.ContinuationSupport;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.nio.SelectChannelConnector;
 import org.eclipse.jetty.server.ssl.SslSelectChannelConnector;
@@ -85,7 +87,7 @@ import org.openide.util.lookup.ServiceProvider;
  * @author panisson
  *
  */
-//@ServiceProvider(service = StreamingServer.class)
+@ServiceProvider(service = StreamingServer.class)
 public class StreamingServerImpl implements StreamingServer {
     
     private static final Logger logger =  Logger.getLogger(StreamingServerImpl.class.getName());
@@ -274,12 +276,12 @@ public class StreamingServerImpl implements StreamingServer {
 
             Request requestWrapper = new RequestWrapper(request);
             SocketChannel channel = (SocketChannel)request.getAttribute(RequestWrapper.SOCKET_REFERENCE_KEY);
-            Response responseWrapper = new ResponseWrapper(response, channel);
+            ResponseWrapper responseWrapper = new ResponseWrapper(response, channel);
             
             if (!authenticationFilter.authenticate(requestWrapper, responseWrapper))
                 return;
             
-            String context = request.getServletPath(); // .getPath().getPath();
+            String context = request.getRequestURI(); // .getPath().getPath();
             int endIndex = context.indexOf("/", 1);
             if (endIndex<0) endIndex=context.length();
             context = context.substring(0, endIndex);
@@ -305,7 +307,14 @@ public class StreamingServerImpl implements StreamingServer {
                 } catch (IOException e) {}
                 
             } else {
+                
                 controller.handle(requestWrapper, responseWrapper);
+                
+                if (!responseWrapper.isClosed()) {
+                    Continuation c = ContinuationSupport.getContinuation(request);
+                    c.setTimeout(-1);
+                    c.suspend(response);
+                }
             }
         }
         
