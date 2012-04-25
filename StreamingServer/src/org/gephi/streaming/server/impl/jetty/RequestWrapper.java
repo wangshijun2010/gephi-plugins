@@ -39,60 +39,64 @@ Contributor(s):
 
 Portions Copyrighted 2011 Gephi Consortium.
  */
-package org.gephi.streaming.server;
+package org.gephi.streaming.server.impl.jetty;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Enumeration;
-import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+import org.gephi.streaming.server.Request;
 
 /**
- * The Request is used to provide an interface to the 
- * HTTP entity body and message header. 
- * This provides methods that allow the entity body 
- * to be acquired as a stream.
- * 
  * @author panisson
  *
  */
-public interface Request {
+public class RequestWrapper implements Request {
 
-    /**
-     * This is used to read the content body.
-     * 
-     * @return this returns an input stream containing the message body
-     * @throws IOException
-     */
-    public InputStream getInputStream() throws IOException;
-
-    /**
-     * This is used to provide quick access to the parameters.
-     * 
-     * @param name - this is the name of the parameter value
-     * @return the parameter value for the given name
-     * @throws IOException
-     */
-    public String getParameter(String name) throws IOException;
-
-    /**
-     * This can be used to get the value of the 
-     * first message header that has the specified name.
-     * 
-     * @param name - the HTTP message header to get the value from
-     * @return this returns the value that the HTTP message header
-     */
-    public String getHeader(String name);
-
-    /**
-     *
-     * @return the String representation of the client address
-     */
-    public String getClientAddress();
-
-    public Enumeration getAttributeNames();
+    public final static String SOCKET_REFERENCE_KEY = "SOCKET_REFERENCE_KEY";
     
-    public Object getAttribute(String name);
+    private HttpServletRequest request;
     
-    public void setAttribute(String name, Object value);
+    public RequestWrapper(HttpServletRequest request) {
+        this.request = request;
+    }
+
+    /* (non-Javadoc)
+     * @see org.gephi.streaming.server.impl.Request#getInputStream()
+     */
+    public InputStream getInputStream() throws IOException {
+        return request.getInputStream();
+    }
+
+    /* (non-Javadoc)
+     * @see org.gephi.streaming.server.impl.Request#getParameter(java.lang.String)
+     */
+    public String getParameter(String arg0) throws IOException {
+        return request.getParameter(arg0);
+    }
+
+    /* (non-Javadoc)
+     * @see org.gephi.streaming.server.impl.Request#getHeader(java.lang.String)
+     */
+    public String getHeader(String arg0) {
+        return request.getHeader(arg0);
+    }
+
+    public String getClientAddress() {
+        return request.getRemoteAddr();
+    }
+
+    public Enumeration getAttributeNames() {
+        return request.getAttributeNames();
+    }
+    
+    public Object getAttribute(String name) {
+        return request.getAttribute(name);
+    }
+    
+    public void setAttribute(String name, Object value) {
+        request.setAttribute(name, value);
+    }
 
 }

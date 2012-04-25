@@ -39,7 +39,7 @@ Contributor(s):
 
 Portions Copyrighted 2011 Gephi Consortium.
  */
-package org.gephi.streaming.server.impl.simpleframework;
+package org.gephi.streaming.server.impl.jetty;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -47,6 +47,7 @@ import java.io.PrintStream;
 import java.net.SocketException;
 import java.nio.channels.SocketChannel;
 
+import javax.servlet.http.HttpServletResponse;
 import org.gephi.streaming.server.Response;
 
 
@@ -58,7 +59,7 @@ import org.gephi.streaming.server.Response;
  */
 public class ResponseWrapper implements Response {
     
-    private final org.simpleframework.http.Response response;
+    private final HttpServletResponse response;
     private SocketChannel channel;
     
     /**
@@ -66,7 +67,7 @@ public class ResponseWrapper implements Response {
      * 
      * @param response - the response to be used as delegate
      */
-    public ResponseWrapper(org.simpleframework.http.Response response, SocketChannel channel) {
+    public ResponseWrapper(HttpServletResponse response, SocketChannel channel) {
         this.response = response;
         this.channel = channel;
     }
@@ -75,7 +76,7 @@ public class ResponseWrapper implements Response {
      * @see org.gephi.streaming.server.impl.Response#close()
      */
     public void close() throws IOException {
-        response.close();
+        response.getOutputStream().close();
     }
 
     /* (non-Javadoc)
@@ -94,40 +95,33 @@ public class ResponseWrapper implements Response {
     }
 
     /* (non-Javadoc)
-     * @see org.gephi.streaming.server.impl.Response#set(java.lang.String, java.lang.String)
-     */
-    public void set(String arg0, String arg1) {
-        response.set(arg0, arg1);
-    }
-
-    /* (non-Javadoc)
      * @see org.gephi.streaming.server.impl.Response#setCode(int)
      */
     public void setCode(int arg0) {
-        response.setCode(arg0);
+        response.setStatus(arg0);
     }
 
     /* (non-Javadoc)
      * @see org.gephi.streaming.server.impl.Response#setText(java.lang.String)
      */
     public void setText(String arg0) {
-        response.setText(arg0);
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public void add(String name,
             String value) {
-        response.add(name, value);
+        response.addHeader(name, value);
     }
 
     @Override
     public void setDate(String name, long date) {
-        response.setDate(name, date);
+        response.setDateHeader(name, date);
     }
 
     @Override
     public void commit() throws IOException {
-        response.commit();
+        response.flushBuffer();
     }
 
     /**
@@ -147,7 +141,7 @@ public class ResponseWrapper implements Response {
 
         @Override
         public void write(int b) throws IOException {
-            if (channel != null && !channel.isConnected()) {
+            if (!channel.isConnected()) {
                 throw new SocketException("Socket closed");
             }
             out.write(b);
@@ -160,7 +154,7 @@ public class ResponseWrapper implements Response {
 
         @Override
         public void flush() throws IOException {
-            if (channel != null && !channel.isConnected()) {
+            if (!channel.isConnected()) {
                 throw new SocketException("Socket closed");
             }
             out.flush();

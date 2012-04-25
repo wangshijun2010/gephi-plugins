@@ -85,7 +85,7 @@ public class BasicAuthenticationFilter implements AuthenticationFilter {
     
     private boolean doAuthenticate(Request request, Response response) {
         
-        String encoded = request.getValue("Authorization");
+        String encoded = request.getHeader("Authorization");
         
         if (encoded==null) {
             return false;

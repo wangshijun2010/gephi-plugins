@@ -43,6 +43,8 @@ package org.gephi.streaming.server.impl.simpleframework;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collections;
+import java.util.Enumeration;
 import java.util.Map;
 
 import org.gephi.streaming.server.Request;
@@ -78,7 +80,7 @@ public class RequestWrapper implements Request {
     /* (non-Javadoc)
      * @see org.gephi.streaming.server.impl.Request#getValue(java.lang.String)
      */
-    public String getValue(String arg0) {
+    public String getHeader(String arg0) {
         return request.getValue(arg0);
     }
 
@@ -88,6 +90,18 @@ public class RequestWrapper implements Request {
 
     public Map getAttributes() {
         return request.getAttributes();
+    }
+
+    public Enumeration getAttributeNames() {
+        return Collections.enumeration(request.getAttributes().keySet());
+    }
+
+    public Object getAttribute(String name) {
+        return request.getAttributes().get(name);
+    }
+
+    public void setAttribute(String name, Object value) {
+        request.getAttributes().put(name, value);
     }
 
 }

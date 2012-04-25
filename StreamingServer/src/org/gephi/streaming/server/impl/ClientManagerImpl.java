@@ -62,7 +62,7 @@ public class ClientManagerImpl implements ClientManager {
     public void add(Request request, Response response) {
         registeredClients.add(new ClientData(request,response));
         String clientId = request.getClientAddress();
-        request.getAttributes().put("CLIENT_IDENTIFIER", clientId);
+        request.setAttribute("CLIENT_IDENTIFIER", clientId);
         for (ClientManagerListener listener: listeners) {
             listener.clientConnected(clientId);
         }
@@ -76,7 +76,7 @@ public class ClientManagerImpl implements ClientManager {
                 client.response.close();
                 client.response.getOutputStream().close();
                 clients.remove();
-                String clientId = (String)client.request.getAttributes().get("CLIENT_IDENTIFIER");
+                String clientId = (String)client.request.getAttribute("CLIENT_IDENTIFIER");
                 for (ClientManagerListener listener: listeners) {
                     listener.clientDisconnected(clientId);
                 }
@@ -86,7 +86,7 @@ public class ClientManagerImpl implements ClientManager {
 
     public void remove(Request request, Response response) {
         registeredClients.remove(new ClientData(request,response));
-        String clientId = (String)request.getAttributes().get("CLIENT_IDENTIFIER");
+        String clientId = (String)request.getAttribute("CLIENT_IDENTIFIER");
         for (ClientManagerListener listener: listeners) {
             listener.clientDisconnected(clientId);
         }

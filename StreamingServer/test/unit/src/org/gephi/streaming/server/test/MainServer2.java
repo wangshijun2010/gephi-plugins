@@ -51,8 +51,10 @@ import org.gephi.graph.api.GraphController;
 import org.gephi.graph.api.GraphModel;
 import org.gephi.project.api.ProjectController;
 import org.gephi.project.api.Workspace;
+import org.gephi.streaming.api.GraphUpdaterEventHandler;
 import org.gephi.streaming.api.StreamReader;
 import org.gephi.streaming.api.StreamReaderFactory;
+import org.gephi.streaming.api.event.GraphEventBuilder;
 import org.gephi.streaming.server.ServerController;
 import org.gephi.streaming.server.impl.simpleframework.RequestWrapper;
 import org.gephi.streaming.server.impl.simpleframework.ResponseWrapper;
@@ -107,22 +109,22 @@ public class MainServer2 implements Container {
             }
         };
 
-//        StreamReaderFactory factory = Lookup.getDefault().lookup(StreamReaderFactory.class);
-//        final StreamReader streamReader = factory.createStreamReader("DGS", serverController.getGraphBufferedOperationSupport());
-//
-//        new Thread() {
-//            @Override
-//            public void run() {
-//
-//                try {
-//                    streamReader.processStream(inputStream);
-//
-//                } catch (IOException e) {
-//                    // Exception during processing
-//                    e.printStackTrace();
-//                }
-//            }
-//        }.start();
+        StreamReaderFactory factory = Lookup.getDefault().lookup(StreamReaderFactory.class);
+        final StreamReader streamReader = factory.createStreamReader("DGS", new GraphUpdaterEventHandler(graphModel.getHierarchicalMixedGraph()), new GraphEventBuilder(this));
+
+        new Thread() {
+            @Override
+            public void run() {
+
+                try {
+                    streamReader.processStream(inputStream);
+
+                } catch (IOException e) {
+                    // Exception during processing
+                    e.printStackTrace();
+                }
+            }
+        }.start();
 	}
 
    public void handle(Request request, Response response) {
