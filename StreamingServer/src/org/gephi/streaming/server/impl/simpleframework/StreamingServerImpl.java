@@ -39,7 +39,7 @@ Contributor(s):
 
 Portions Copyrighted 2011 Gephi Consortium.
  */
-package org.gephi.streaming.server.impl;
+package org.gephi.streaming.server.impl.simpleframework;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -69,6 +69,7 @@ import org.gephi.streaming.server.Response;
 import org.gephi.streaming.server.ServerController;
 import org.gephi.streaming.server.StreamingServer;
 import org.gephi.streaming.server.StreamingServerConfig;
+import org.gephi.streaming.server.impl.BasicAuthenticationFilter;
 import org.openide.util.lookup.ServiceProvider;
 import org.simpleframework.http.Status;
 import org.simpleframework.http.core.Container;

@@ -39,7 +39,7 @@ Contributor(s):
 
 Portions Copyrighted 2011 Gephi Consortium.
  */
-package org.gephi.streaming.server.impl;
+package org.gephi.streaming.server.impl.simpleframework;
 
 import java.io.IOException;
 import java.io.InputStream;
