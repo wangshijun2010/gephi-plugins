@@ -43,7 +43,6 @@ package org.gephi.streaming.server.impl.jetty;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.channels.SocketChannel;
 import java.security.KeyManagementException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -275,8 +274,7 @@ public class StreamingServerImpl implements StreamingServer {
                 throws ServletException, IOException {
 
             Request requestWrapper = new RequestWrapper(request);
-            SocketChannel channel = (SocketChannel)request.getAttribute(RequestWrapper.SOCKET_REFERENCE_KEY);
-            ResponseWrapper responseWrapper = new ResponseWrapper(response, channel);
+            ResponseWrapper responseWrapper = new ResponseWrapper(response);
             
             if (!authenticationFilter.authenticate(requestWrapper, responseWrapper))
                 return;

@@ -56,8 +56,6 @@ import org.openide.util.Exceptions;
  *
  */
 public class RequestWrapper implements Request {
-
-    public final static String SOCKET_REFERENCE_KEY = "SOCKET_REFERENCE_KEY";
     
     private HttpServletRequest request;
     private byte[] data;

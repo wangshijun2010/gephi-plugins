@@ -44,8 +44,6 @@ package org.gephi.streaming.server.impl.jetty;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
-import java.net.SocketException;
-import java.nio.channels.SocketChannel;
 
 import javax.servlet.http.HttpServletResponse;
 import org.gephi.streaming.server.Response;
@@ -60,7 +58,6 @@ import org.gephi.streaming.server.Response;
 public class ResponseWrapper implements Response {
     
     private final HttpServletResponse response;
-    private SocketChannel channel;
     private boolean isClosed = false;
     
     /**
@@ -68,9 +65,8 @@ public class ResponseWrapper implements Response {
      * 
      * @param response - the response to be used as delegate
      */
-    public ResponseWrapper(HttpServletResponse response, SocketChannel channel) {
+    public ResponseWrapper(HttpServletResponse response) {
         this.response = response;
-        this.channel = channel;
     }
 
     /* (non-Javadoc)
@@ -132,9 +128,6 @@ public class ResponseWrapper implements Response {
     /**
      * OutputStream wrapper that is able to detect when the socket
      * was closed.
-     * Workaround to the fact that the OutputStream in the simpleframework
-     * implementation is buffered and does not throws an exception in the
-     * calling thread when the socket was closed by the client.
      */
     private class OutputStreamWrapper extends OutputStream {
 
@@ -146,9 +139,6 @@ public class ResponseWrapper implements Response {
 
         @Override
         public void write(int b) throws IOException {
-//            if (!channel.isConnected()) {
-//                throw new SocketException("Socket closed");
-//            }
             out.write(b);
         }
 
@@ -160,9 +150,6 @@ public class ResponseWrapper implements Response {
 
         @Override
         public void flush() throws IOException {
-//            if (!channel.isConnected()) {
-//                throw new SocketException("Socket closed");
-//            }
             out.flush();
         }
 

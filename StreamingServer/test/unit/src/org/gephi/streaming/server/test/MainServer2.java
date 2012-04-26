@@ -138,7 +138,7 @@ public class MainServer2 extends HttpServlet {
 	   response.setHeader("Server", "Gephi/0.7 alpha4");
 	   response.setDateHeader("Date", time);
 	   response.setDateHeader("Last-Modified", time);
-	   serverController.handle(new RequestWrapper(request), new ResponseWrapper(response, null));
+	   serverController.handle(new RequestWrapper(request), new ResponseWrapper(response));
            Continuation c = ContinuationSupport.getContinuation(request);
            c.setTimeout(-1);
            c.suspend(response);
