@@ -51,40 +51,32 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.List;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.servlet.ServletContextHandler;
+import org.eclipse.jetty.servlet.ServletHolder;
 import org.junit.Ignore;
 
-import org.simpleframework.http.Request;
-import org.simpleframework.http.Response;
-import org.simpleframework.http.core.Container;
-import org.simpleframework.transport.connect.Connection;
-import org.simpleframework.transport.connect.SocketConnection;
-
 @Ignore
-public class StreamingServerTest implements Container {
+public class StreamingServerTest extends HttpServlet {
 	
     private static final String DGS_RESOURCE = "alt_add_remove.dgs";
 
-    public void handle(Request request, Response response) {
-        PrintStream body;
-        try {
-            body = response.getPrintStream();
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-            return;
-        }
+    @Override
+    public void service(HttpServletRequest request, HttpServletResponse response) {
         long time = System.currentTimeMillis();
 
-        response.set("Content-Type", "text/plain");
-        response.set("Server", "HelloWorld/1.0 (Simple 4.0)");
-        response.setDate("Date", time);
-        response.setDate("Last-Modified", time);
+        response.setHeader("Content-Type", "text/plain");
+        response.setHeader("Server", "HelloWorld/1.0 (Simple 4.0)");
+        response.setDateHeader("Date", time);
+        response.setDateHeader("Last-Modified", time);
 
         URL url = this.getClass().getResource(DGS_RESOURCE);
 
         try {
             OutputStream out = response.getOutputStream();
-            response.getPrintStream();
 
             URLConnection connection = url.openConnection();
             connection.connect();
@@ -108,7 +100,7 @@ public class StreamingServerTest implements Container {
                 }
 
             }
-            body.flush();
+            out.flush();
         } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -116,10 +108,12 @@ public class StreamingServerTest implements Container {
     }
 
     public static void main(String[] list) throws Exception {
-        Container container = new StreamingServerTest();
-        Connection connection = new SocketConnection(container);
-        SocketAddress address = new InetSocketAddress(8080);
-
-        connection.connect(address);
+        Server server = new Server(8080);
+        ServletContextHandler context = new ServletContextHandler();
+        context.setContextPath("/");
+        context.addServlet(new ServletHolder(new StreamingServerTest()), "/*");
+        server.setHandler(context);
+        server.start();
+        server.join();
     }
 }

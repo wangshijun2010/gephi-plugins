@@ -46,6 +46,14 @@ import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import org.eclipse.jetty.continuation.Continuation;
+import org.eclipse.jetty.continuation.ContinuationSupport;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.servlet.ServletContextHandler;
+import org.eclipse.jetty.servlet.ServletHolder;
 import org.gephi.data.attributes.api.AttributeController;
 import org.gephi.graph.api.GraphController;
 import org.gephi.graph.api.GraphModel;
@@ -56,15 +64,10 @@ import org.gephi.streaming.api.StreamReader;
 import org.gephi.streaming.api.StreamReaderFactory;
 import org.gephi.streaming.api.event.GraphEventBuilder;
 import org.gephi.streaming.server.ServerController;
-import org.gephi.streaming.server.impl.simpleframework.RequestWrapper;
-import org.gephi.streaming.server.impl.simpleframework.ResponseWrapper;
 import org.gephi.streaming.server.impl.ServerControllerImpl;
+import org.gephi.streaming.server.impl.jetty.RequestWrapper;
+import org.gephi.streaming.server.impl.jetty.ResponseWrapper;
 import org.openide.util.Lookup;
-import org.simpleframework.http.Request;
-import org.simpleframework.http.Response;
-import org.simpleframework.http.core.Container;
-import org.simpleframework.transport.connect.Connection;
-import org.simpleframework.transport.connect.SocketConnection;
 
 /**
  * From linux, you can connect to the server using:<br>
@@ -73,28 +76,28 @@ import org.simpleframework.transport.connect.SocketConnection;
  * @author panisson
  *
  */
-public class MainServer2 implements Container {
+public class MainServer2 extends HttpServlet {
 	
-	private static final String DGS_RESOURCE = "amazon_0201485419_400.dgs";
-	
-	private ServerController serverController;
-	
-	public MainServer2() {
-	    
-	    ProjectController projectController = Lookup.getDefault().lookup(ProjectController.class);
+    private static final String DGS_RESOURCE = "amazon_0201485419_400.dgs";
+
+    private ServerController serverController;
+
+    public MainServer2() {
+
+        ProjectController projectController = Lookup.getDefault().lookup(ProjectController.class);
         projectController.newProject();
         Workspace workspace = projectController.newWorkspace(projectController.getCurrentProject());
-        
+
         AttributeController ac = Lookup.getDefault().lookup(AttributeController.class);
         ac.getModel();
-        
+
         GraphController graphController = Lookup.getDefault().lookup(GraphController.class);
         GraphModel graphModel = graphController.getModel();
-	    
+
         serverController = new ServerControllerImpl(graphModel.getHierarchicalMixedGraph());
-	    
-	    final InputStream fileInputStream = this.getClass().getResourceAsStream(DGS_RESOURCE);
-        
+
+        final InputStream fileInputStream = this.getClass().getResourceAsStream(DGS_RESOURCE);
+
         final InputStream inputStream = new InputStream() {
             private int count = 0;
 
@@ -125,31 +128,30 @@ public class MainServer2 implements Container {
                 }
             }
         }.start();
-	}
+    }
 
-   public void handle(Request request, Response response) {
+    @Override
+    public void service(HttpServletRequest request, HttpServletResponse response) {
 	   long time = System.currentTimeMillis();
 
-	   response.set("Content-Type", "text/plain");
-	   response.set("Server", "Gephi/0.7 alpha4");
-	   response.setDate("Date", time);
-	   response.setDate("Last-Modified", time);
-	   
-	   try {
-		   serverController.handle(new RequestWrapper(request), new ResponseWrapper(response, null));
-		   
-	   } catch (Exception e) {
-		   // TODO Auto-generated catch block
-		   e.printStackTrace();
-	   }
+	   response.setHeader("Content-Type", "text/plain");
+	   response.setHeader("Server", "Gephi/0.7 alpha4");
+	   response.setDateHeader("Date", time);
+	   response.setDateHeader("Last-Modified", time);
+	   serverController.handle(new RequestWrapper(request), new ResponseWrapper(response, null));
+           Continuation c = ContinuationSupport.getContinuation(request);
+           c.setTimeout(-1);
+           c.suspend(response);
    }
 
    public static void main(String[] list) throws Exception {
-      Container container = new MainServer2();
-      Connection connection = new SocketConnection(container);
-      SocketAddress address = new InetSocketAddress(8080);
-
-      connection.connect(address);
+        Server server = new Server(8080);
+        ServletContextHandler context = new ServletContextHandler();
+        context.setContextPath("/");
+        context.addServlet(new ServletHolder(new MainServer2()), "/*");
+        server.setHandler(context);
+        server.start();
+        server.join();
       
       
    }

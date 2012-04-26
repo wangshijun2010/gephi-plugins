@@ -44,58 +44,45 @@ package org.gephi.streaming.server.test;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.PrintStream;
-import java.net.InetSocketAddress;
-import java.net.SocketAddress;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.ArrayList;
-import java.util.List;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.servlet.ServletContextHandler;
+import org.eclipse.jetty.servlet.ServletHolder;
 import org.openide.util.Exceptions;
 
-import org.simpleframework.http.Request;
-import org.simpleframework.http.Response;
-import org.simpleframework.http.core.Container;
-import org.simpleframework.transport.connect.Connection;
-import org.simpleframework.transport.connect.SocketConnection;
-
-public class Main3 implements Container {
+public class Main3 extends HttpServlet {
 
     private static final String DGS_RESOURCE = "amazon_0201485419_400.dgs";
     private static final String JSON_RESOURCE = "graph.json";
 
-    public void handle(Request request, Response response) {
+    @Override
+    public void service(HttpServletRequest request, HttpServletResponse response) {
 
         try {
             String operation = request.getParameter("operation");
             if (operation!=null && operation.equalsIgnoreCase("updateGraph")) {
-                response.close();
+                response.getOutputStream().close();
                 return;
             }
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
-
-        PrintStream body;
-        try {
-            body = response.getPrintStream();
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-            return;
-        }
+        
         long time = System.currentTimeMillis();
 
-        response.set("Content-Type", "text/plain");
-        response.set("Server", "HelloWorld/1.0 (Simple 4.0)");
-        response.setDate("Date", time);
-        response.setDate("Last-Modified", time);
+        response.setHeader("Content-Type", "text/plain");
+        response.setHeader("Server", "HelloWorld/1.0 (Simple 4.0)");
+        response.setDateHeader("Date", time);
+        response.setDateHeader("Last-Modified", time);
 
         URL url = this.getClass().getResource(JSON_RESOURCE);
 
         try {
             OutputStream out = response.getOutputStream();
-            response.getPrintStream();
 
             URLConnection connection = url.openConnection();
             connection.connect();
@@ -119,10 +106,9 @@ public class Main3 implements Container {
                 }
 
             }
-            body.flush();
+            out.flush();
             inputStream.close();
             out.close();
-            response.close();
         } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -130,10 +116,12 @@ public class Main3 implements Container {
     }
 
     public static void main(String[] list) throws Exception {
-        Container container = new Main3();
-        Connection connection = new SocketConnection(container);
-        SocketAddress address = new InetSocketAddress(8080);
-
-        connection.connect(address);
+        Server server = new Server(8080);
+        ServletContextHandler context = new ServletContextHandler();
+        context.setContextPath("/");
+        context.addServlet(new ServletHolder(new Main3()), "/*");
+        server.setHandler(context);
+        server.start();
+        server.join();
     }
 }
