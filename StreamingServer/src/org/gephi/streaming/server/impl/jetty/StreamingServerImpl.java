@@ -271,10 +271,9 @@ public class StreamingServerImpl implements StreamingServer {
         public void service(HttpServletRequest request, HttpServletResponse response) 
                 throws ServletException, IOException {
 
-            HttpServletRequest requestWrapper = new RequestWrapper(request);
             ResponseWrapper responseWrapper = new ResponseWrapper(response);
             
-            if (!authenticationFilter.authenticate(requestWrapper, responseWrapper))
+            if (!authenticationFilter.authenticate(request, responseWrapper))
                 return;
             
             String context = request.getRequestURI(); // .getPath().getPath();
@@ -304,7 +303,7 @@ public class StreamingServerImpl implements StreamingServer {
                 
             } else {
                 
-                controller.handle(requestWrapper, responseWrapper);
+                controller.handle(request, responseWrapper);
                 
                 if (!responseWrapper.isClosed()) {
                     AsyncContext aCtx = request.startAsync();
