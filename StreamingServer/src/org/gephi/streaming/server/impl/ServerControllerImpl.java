@@ -163,10 +163,8 @@ public class ServerControllerImpl implements ServerController {
     }
     
     private void executeError(HttpServletResponse response, String message) throws IOException {
-        response.setStatus(500);
+        response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         response.getWriter().println(message);
-        response.getOutputStream().close(); // FIXME: remove this
-        
     }
     
 }

@@ -114,8 +114,7 @@ public class ServerOperationExecutor {
      */
     public void executeGetGraph(final HttpServletRequest request, final HttpServletResponse response) throws IOException {
         
-        response.flushBuffer(); //TODO: verify which one is correct
-        response.getOutputStream().flush();
+        response.flushBuffer();
 
         String format = request.getParameter("format");
         if(format==null) {
@@ -150,9 +149,7 @@ public class ServerOperationExecutor {
 
         graphBufferedOperationSupport.addHandler(wrapper);
 
-        if (close!=null)
-            outputStream.close();
-        else {
+        if (close == null) {
             AsyncContext aCtx = request.startAsync();
             aCtx.setTimeout(-1);
         }
@@ -183,7 +180,6 @@ public class ServerOperationExecutor {
         }
         
         writer.endStream();
-        outputStream.close();
     }
     
     /**
@@ -213,7 +209,6 @@ public class ServerOperationExecutor {
             graph.readUnlock();
         }
         writer.endStream();
-        outputStream.close();
     }
     
     /**
@@ -249,7 +244,6 @@ public class ServerOperationExecutor {
         
         StreamReader reader = readerFactory.createStreamReader(format, cos, eventBuilder);
         reader.processStream(inputStream);
-        outputStream.close();
     }
     
     private Map<String, Object> getNodeAttributes(Node node) {

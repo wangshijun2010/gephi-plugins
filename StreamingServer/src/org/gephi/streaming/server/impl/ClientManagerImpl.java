@@ -42,7 +42,6 @@ Portions Copyrighted 2011 Gephi Consortium.
 
 package org.gephi.streaming.server.impl;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -74,14 +73,12 @@ public class ClientManagerImpl implements ClientManager {
         Iterator<ClientData> clients = registeredClients.iterator();
         while (clients.hasNext()) {
             ClientData client = clients.next();
-            try {
-                client.response.getOutputStream().close(); //FIXME: stop asynch response
-                clients.remove();
-                String clientId = (String)client.request.getAttribute("CLIENT_IDENTIFIER");
-                for (ClientManagerListener listener: listeners) {
-                    listener.clientDisconnected(clientId);
-                }
-            } catch (IOException e) { }
+            client.request.getAsyncContext().complete();
+            clients.remove();
+            String clientId = (String)client.request.getAttribute("CLIENT_IDENTIFIER");
+            for (ClientManagerListener listener: listeners) {
+                listener.clientDisconnected(clientId);
+            }
         }
     }
 

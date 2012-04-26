@@ -62,14 +62,9 @@ public class Main3 extends HttpServlet {
     @Override
     public void service(HttpServletRequest request, HttpServletResponse response) {
 
-        try {
-            String operation = request.getParameter("operation");
-            if (operation!=null && operation.equalsIgnoreCase("updateGraph")) {
-                response.getOutputStream().close();
-                return;
-            }
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+        String operation = request.getParameter("operation");
+        if (operation!=null && operation.equalsIgnoreCase("updateGraph")) {
+            return;
         }
         
         long time = System.currentTimeMillis();
@@ -108,7 +103,6 @@ public class Main3 extends HttpServlet {
             }
             out.flush();
             inputStream.close();
-            out.close();
         } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();

@@ -114,12 +114,11 @@ public class BasicAuthenticationFilter implements AuthenticationFilter {
     }
     
     private void send401(HttpServletRequest request, HttpServletResponse response) {
-        response.setStatus(401);
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         response.addHeader("WWW-Authenticate", "Basic realm=\""+REALM+"\"");
         
         try {
-            response.getWriter().println("HTTP 401: Authorization Required");
-            response.getOutputStream().close(); // FIXME: remove this
+            response.getOutputStream().println("HTTP 401: Authorization Required");
         } catch (IOException e) {}
     }
     

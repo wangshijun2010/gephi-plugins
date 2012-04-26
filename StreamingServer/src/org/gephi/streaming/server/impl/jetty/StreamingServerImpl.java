@@ -60,7 +60,6 @@ import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
 
-import javax.servlet.AsyncContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -280,7 +279,7 @@ public class StreamingServerImpl implements StreamingServer {
 
             ServerController controller = controllers.get(context);
             if (controller==null) {
-                logger.log(Level.WARNING, "Invalid context: {0}", context);
+                logger.log(Level.WARNING, "Invalid request for context: {0}", context);
                 response.setStatus(HttpServletResponse.SC_NOT_FOUND);
 
                 long time = System.currentTimeMillis();
@@ -290,13 +289,7 @@ public class StreamingServerImpl implements StreamingServer {
                 response.addHeader("Connection", "close");
                 response.addDateHeader("Date", time);
                 response.addDateHeader("Last-Modified", time);
-
-                try {
-                    response.getOutputStream().println("404 Not Found");
-//                    response.getPrintStream().close();
-                    request.getInputStream().close();
-                    response.getOutputStream().close();
-                } catch (IOException e) {}
+                response.setStatus(HttpServletResponse.SC_NOT_FOUND);
                 
             } else {
                 
