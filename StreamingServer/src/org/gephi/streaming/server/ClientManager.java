@@ -42,17 +42,19 @@ Portions Copyrighted 2011 Gephi Consortium.
 
 package org.gephi.streaming.server;
 
+import javax.servlet.http.HttpServletRequest;
+
 /**
  *
  * @author panisson
  */
 public interface ClientManager {
 
-    void add(Request request, Response response);
+    void add(HttpServletRequest request, Response response);
 
     void addClientManagerListener(ClientManagerListener listener);
 
-    void remove(Request request, Response response);
+    void remove(HttpServletRequest request, Response response);
 
     void stopAll();
 

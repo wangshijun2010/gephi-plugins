@@ -46,8 +46,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+
+import javax.servlet.http.HttpServletRequest;
+
 import org.gephi.streaming.server.ClientManager;
-import org.gephi.streaming.server.Request;
 import org.gephi.streaming.server.Response;
 
 /**
@@ -59,9 +61,9 @@ public class ClientManagerImpl implements ClientManager {
     private List<ClientData> registeredClients = new ArrayList<ClientData>();
     private List<ClientManagerListener> listeners = new ArrayList<ClientManagerListener>();
 
-    public void add(Request request, Response response) {
+    public void add(HttpServletRequest request, Response response) {
         registeredClients.add(new ClientData(request,response));
-        String clientId = request.getClientAddress();
+        String clientId = request.getRemoteAddr();
         request.setAttribute("CLIENT_IDENTIFIER", clientId);
         for (ClientManagerListener listener: listeners) {
             listener.clientConnected(clientId);
@@ -84,7 +86,7 @@ public class ClientManagerImpl implements ClientManager {
         }
     }
 
-    public void remove(Request request, Response response) {
+    public void remove(HttpServletRequest request, Response response) {
         registeredClients.remove(new ClientData(request,response));
         String clientId = (String)request.getAttribute("CLIENT_IDENTIFIER");
         for (ClientManagerListener listener: listeners) {
@@ -97,9 +99,9 @@ public class ClientManagerImpl implements ClientManager {
     }
 
     private class ClientData {
-        private final Request request;
+        private final HttpServletRequest request;
         private final Response response;
-        public ClientData(Request request, Response response) {
+        public ClientData(HttpServletRequest request, Response response) {
             this.request = request;
             this.response = response;
         }

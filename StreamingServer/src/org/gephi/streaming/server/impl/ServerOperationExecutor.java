@@ -50,6 +50,9 @@ import java.io.OutputStream;
 import java.net.SocketException;
 import java.util.HashMap;
 import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+
 import org.gephi.data.attributes.api.AttributeController;
 
 import org.gephi.data.attributes.api.AttributeRow;
@@ -70,7 +73,6 @@ import org.gephi.streaming.api.StreamWriter;
 import org.gephi.streaming.api.StreamWriterFactory;
 import org.gephi.streaming.api.event.ElementType;
 import org.gephi.streaming.api.event.EventType;
-import org.gephi.streaming.server.Request;
 import org.gephi.streaming.server.Response;
 import org.openide.util.Lookup;
 
@@ -111,7 +113,7 @@ public class ServerOperationExecutor {
      * @param format
      * @param outputStream
      */
-    public void executeGetGraph(final Request request, final Response response) throws IOException {
+    public void executeGetGraph(final HttpServletRequest request, final Response response) throws IOException {
         
         response.commit();
         response.getOutputStream().flush();

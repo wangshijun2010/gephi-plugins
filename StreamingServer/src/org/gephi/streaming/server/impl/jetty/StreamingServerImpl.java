@@ -72,7 +72,6 @@ import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.gephi.streaming.server.AuthenticationFilter;
-import org.gephi.streaming.server.Request;
 import org.gephi.streaming.server.Response;
 import org.gephi.streaming.server.ServerController;
 import org.gephi.streaming.server.StreamingServer;
@@ -272,7 +271,7 @@ public class StreamingServerImpl implements StreamingServer {
         public void service(HttpServletRequest request, HttpServletResponse response) 
                 throws ServletException, IOException {
 
-            Request requestWrapper = new RequestWrapper(request);
+            HttpServletRequest requestWrapper = new RequestWrapper(request);
             ResponseWrapper responseWrapper = new ResponseWrapper(response);
             
             if (!authenticationFilter.authenticate(requestWrapper, responseWrapper))

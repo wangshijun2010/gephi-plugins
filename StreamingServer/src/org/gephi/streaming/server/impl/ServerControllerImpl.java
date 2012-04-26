@@ -44,8 +44,9 @@ package org.gephi.streaming.server.impl;
 import java.io.IOException;
 import java.io.OutputStream;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.gephi.graph.api.Graph;
-import org.gephi.streaming.server.Request;
 import org.gephi.streaming.server.Response;
 import org.gephi.streaming.server.ServerController;
 
@@ -92,7 +93,7 @@ public class ServerControllerImpl implements ServerController {
     /* (non-Javadoc)
      * @see org.gephi.streaming.server.impl.ServerController#handle(org.gephi.streaming.server.Request, org.gephi.streaming.server.Response)
      */
-    public void handle(Request request, Response response) {
+    public void handle(HttpServletRequest request, Response response) {
         
         long time = System.currentTimeMillis();
 

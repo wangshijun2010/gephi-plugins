@@ -43,8 +43,9 @@ package org.gephi.streaming.server.impl;
 
 import java.io.IOException;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.gephi.streaming.server.AuthenticationFilter;
-import org.gephi.streaming.server.Request;
 import org.gephi.streaming.server.Response;
 
 /**
@@ -75,7 +76,7 @@ public class BasicAuthenticationFilter implements AuthenticationFilter {
         this.password = password;
     }
     
-    public boolean authenticate(Request request, Response response) {
+    public boolean authenticate(HttpServletRequest request, Response response) {
         if (enabled && !doAuthenticate(request, response)) {
             send401(request, response);
             return false;
@@ -83,7 +84,7 @@ public class BasicAuthenticationFilter implements AuthenticationFilter {
             return true;
     }
     
-    private boolean doAuthenticate(Request request, Response response) {
+    private boolean doAuthenticate(HttpServletRequest request, Response response) {
         
         String encoded = request.getHeader("Authorization");
         
@@ -112,7 +113,7 @@ public class BasicAuthenticationFilter implements AuthenticationFilter {
             return false;
     }
     
-    private void send401(Request request, Response response) {
+    private void send401(HttpServletRequest request, Response response) {
         response.setCode(401);
         response.setText("Unauthorized");
         response.add("WWW-Authenticate", "Basic realm=\""+REALM+"\"");
