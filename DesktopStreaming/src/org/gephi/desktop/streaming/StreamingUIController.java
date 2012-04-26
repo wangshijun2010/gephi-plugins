@@ -109,6 +109,9 @@ public class StreamingUIController {
             }
 
             public void unselect(Workspace workspace) {
+            }
+
+            public void close(Workspace workspace) {
                 model = workspace.getLookup().lookup(StreamingModel.class);
                 if (model != null) {
                     if (model.isMasterRunning()) {
@@ -117,9 +120,6 @@ public class StreamingUIController {
                     model.removeAllConnections();
                     refreshModel();
                 }
-            }
-
-            public void close(Workspace workspace) {
             }
 
             public void disable() {
