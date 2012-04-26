@@ -42,6 +42,7 @@ Portions Copyrighted 2011 Gephi Consortium.
 package org.gephi.streaming.server.impl;
 
 import java.io.BufferedReader;
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -135,7 +136,7 @@ public class ServerOperationExecutor {
                     writer.handleGraphEvent(event);
                 } catch (RuntimeException e) {
                     Throwable cause = e.getCause();
-                    if (cause instanceof SocketException) {
+                    if (cause instanceof SocketException || cause instanceof EOFException) {
                         System.out.println("*Socket closed*");
                         graphBufferedOperationSupport.removeHandler(this);
                         clientManager.remove(request, response);
