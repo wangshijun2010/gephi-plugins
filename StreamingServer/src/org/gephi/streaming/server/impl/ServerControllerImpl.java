@@ -164,7 +164,7 @@ public class ServerControllerImpl implements ServerController {
     
     private void executeError(HttpServletResponse response, String message) throws IOException {
         response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-        response.getWriter().println(message);
+        response.getOutputStream().println(message);
     }
     
 }
