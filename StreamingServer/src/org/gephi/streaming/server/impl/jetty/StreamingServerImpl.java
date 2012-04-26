@@ -60,12 +60,11 @@ import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
 
+import javax.servlet.AsyncContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import org.eclipse.jetty.continuation.Continuation;
-import org.eclipse.jetty.continuation.ContinuationSupport;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.nio.SelectChannelConnector;
 import org.eclipse.jetty.server.ssl.SslSelectChannelConnector;
@@ -309,9 +308,8 @@ public class StreamingServerImpl implements StreamingServer {
                 controller.handle(requestWrapper, responseWrapper);
                 
                 if (!responseWrapper.isClosed()) {
-                    Continuation c = ContinuationSupport.getContinuation(request);
-                    c.setTimeout(-1);
-                    c.suspend(response);
+                    AsyncContext aCtx = request.startAsync();
+                    aCtx.setTimeout(-1);
                 }
             }
         }

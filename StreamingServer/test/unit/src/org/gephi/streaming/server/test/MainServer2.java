@@ -43,14 +43,11 @@ package org.gephi.streaming.server.test;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.InetSocketAddress;
-import java.net.SocketAddress;
 
+import javax.servlet.AsyncContext;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import org.eclipse.jetty.continuation.Continuation;
-import org.eclipse.jetty.continuation.ContinuationSupport;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
@@ -139,9 +136,8 @@ public class MainServer2 extends HttpServlet {
 	   response.setDateHeader("Date", time);
 	   response.setDateHeader("Last-Modified", time);
 	   serverController.handle(new RequestWrapper(request), new ResponseWrapper(response));
-           Continuation c = ContinuationSupport.getContinuation(request);
-           c.setTimeout(-1);
-           c.suspend(response);
+           AsyncContext aCtx = request.startAsync();
+           aCtx.setTimeout(-1);
    }
 
    public static void main(String[] list) throws Exception {
