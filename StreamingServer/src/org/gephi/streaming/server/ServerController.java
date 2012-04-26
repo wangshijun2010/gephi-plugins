@@ -42,6 +42,7 @@ Portions Copyrighted 2011 Gephi Consortium.
 package org.gephi.streaming.server;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 /**
  * Controller used by the server to handle requests and responses.
@@ -62,7 +63,7 @@ public interface ServerController {
      * @param request
      * @param response
      */
-    public void handle(HttpServletRequest request, Response response);
+    public void handle(HttpServletRequest request, HttpServletResponse response);
 
     /**
      * Stop this controller.

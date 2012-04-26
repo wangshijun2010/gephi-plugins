@@ -45,9 +45,9 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.gephi.graph.api.Graph;
-import org.gephi.streaming.server.Response;
 import org.gephi.streaming.server.ServerController;
 
 /**
@@ -93,15 +93,15 @@ public class ServerControllerImpl implements ServerController {
     /* (non-Javadoc)
      * @see org.gephi.streaming.server.impl.ServerController#handle(org.gephi.streaming.server.Request, org.gephi.streaming.server.Response)
      */
-    public void handle(HttpServletRequest request, Response response) {
+    public void handle(HttpServletRequest request, HttpServletResponse response) {
         
         long time = System.currentTimeMillis();
 
-        response.add("Content-Type", "text/plain");
-        response.add("Server", "Gephi/0.7 alpha4");
-        response.add("Connection", "close");
-        response.setDate("Date", time);
-        response.setDate("Last-Modified", time);
+        response.addHeader("Content-Type", "text/plain");
+        response.addHeader("Server", "Gephi/0.7 alpha4");
+        response.addHeader("Connection", "close");
+        response.setDateHeader("Date", time);
+        response.setDateHeader("Last-Modified", time);
         
         try {
 
@@ -162,11 +162,10 @@ public class ServerControllerImpl implements ServerController {
         clientManager.stopAll();
     }
     
-    private void executeError(Response response, String message) throws IOException {
-        response.setCode(500);
-        response.setText("Internal Server Error");
-        response.getPrintStream().println(message);
-        response.getOutputStream().close();
+    private void executeError(HttpServletResponse response, String message) throws IOException {
+        response.setStatus(500);
+        response.getWriter().println(message);
+        response.getOutputStream().close(); // FIXME: remove this
         
     }
     

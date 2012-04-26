@@ -62,8 +62,6 @@ import org.gephi.streaming.api.StreamReaderFactory;
 import org.gephi.streaming.api.event.GraphEventBuilder;
 import org.gephi.streaming.server.ServerController;
 import org.gephi.streaming.server.impl.ServerControllerImpl;
-import org.gephi.streaming.server.impl.jetty.RequestWrapper;
-import org.gephi.streaming.server.impl.jetty.ResponseWrapper;
 import org.openide.util.Lookup;
 
 /**
@@ -135,7 +133,7 @@ public class MainServer2 extends HttpServlet {
 	   response.setHeader("Server", "Gephi/0.7 alpha4");
 	   response.setDateHeader("Date", time);
 	   response.setDateHeader("Last-Modified", time);
-	   serverController.handle(new RequestWrapper(request), new ResponseWrapper(response));
+	   serverController.handle(request, response);
            AsyncContext aCtx = request.startAsync();
            aCtx.setTimeout(-1);
    }

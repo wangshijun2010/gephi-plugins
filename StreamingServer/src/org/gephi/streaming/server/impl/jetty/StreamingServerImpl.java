@@ -72,7 +72,6 @@ import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.gephi.streaming.server.AuthenticationFilter;
-import org.gephi.streaming.server.Response;
 import org.gephi.streaming.server.ServerController;
 import org.gephi.streaming.server.StreamingServer;
 import org.gephi.streaming.server.StreamingServerConfig;
@@ -270,10 +269,8 @@ public class StreamingServerImpl implements StreamingServer {
         @Override
         public void service(HttpServletRequest request, HttpServletResponse response) 
                 throws ServletException, IOException {
-
-            ResponseWrapper responseWrapper = new ResponseWrapper(response);
             
-            if (!authenticationFilter.authenticate(request, responseWrapper))
+            if (!authenticationFilter.authenticate(request, response))
                 return;
             
             String context = request.getRequestURI(); // .getPath().getPath();
@@ -303,12 +300,8 @@ public class StreamingServerImpl implements StreamingServer {
                 
             } else {
                 
-                controller.handle(request, responseWrapper);
+                controller.handle(request, response);
                 
-                if (!responseWrapper.isClosed()) {
-                    AsyncContext aCtx = request.startAsync();
-                    aCtx.setTimeout(-1);
-                }
             }
         }
         

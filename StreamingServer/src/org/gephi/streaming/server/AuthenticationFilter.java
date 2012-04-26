@@ -42,6 +42,7 @@ Portions Copyrighted 2011 Gephi Consortium.
 package org.gephi.streaming.server;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 
 /**
@@ -107,6 +108,6 @@ public interface AuthenticationFilter {
      * @param response - the response to send errors
      * @return true if the user and password are valid, false otherwise
      */
-    public boolean authenticate(HttpServletRequest request, Response response);
+    public boolean authenticate(HttpServletRequest request, HttpServletResponse response);
 
 }

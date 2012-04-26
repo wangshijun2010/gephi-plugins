@@ -41,17 +41,17 @@ Portions Copyrighted 2011 Gephi Consortium.
  */
 package org.gephi.streaming.server.impl;
 
-import java.io.BufferedReader;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.SocketException;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.servlet.AsyncContext;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.gephi.data.attributes.api.AttributeController;
 
@@ -73,7 +73,6 @@ import org.gephi.streaming.api.StreamWriter;
 import org.gephi.streaming.api.StreamWriterFactory;
 import org.gephi.streaming.api.event.ElementType;
 import org.gephi.streaming.api.event.EventType;
-import org.gephi.streaming.server.Response;
 import org.openide.util.Lookup;
 
 /**
@@ -113,9 +112,9 @@ public class ServerOperationExecutor {
      * @param format
      * @param outputStream
      */
-    public void executeGetGraph(final HttpServletRequest request, final Response response) throws IOException {
+    public void executeGetGraph(final HttpServletRequest request, final HttpServletResponse response) throws IOException {
         
-        response.commit();
+        response.flushBuffer(); //TODO: verify which one is correct
         response.getOutputStream().flush();
 
         String format = request.getParameter("format");
@@ -153,6 +152,10 @@ public class ServerOperationExecutor {
 
         if (close!=null)
             outputStream.close();
+        else {
+            AsyncContext aCtx = request.startAsync();
+            aCtx.setTimeout(-1);
+        }
     }
      
     /**

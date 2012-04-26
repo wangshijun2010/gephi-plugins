@@ -48,9 +48,9 @@ import java.util.Iterator;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.gephi.streaming.server.ClientManager;
-import org.gephi.streaming.server.Response;
 
 /**
  *
@@ -61,7 +61,7 @@ public class ClientManagerImpl implements ClientManager {
     private List<ClientData> registeredClients = new ArrayList<ClientData>();
     private List<ClientManagerListener> listeners = new ArrayList<ClientManagerListener>();
 
-    public void add(HttpServletRequest request, Response response) {
+    public void add(HttpServletRequest request, HttpServletResponse response) {
         registeredClients.add(new ClientData(request,response));
         String clientId = request.getRemoteAddr();
         request.setAttribute("CLIENT_IDENTIFIER", clientId);
@@ -75,8 +75,7 @@ public class ClientManagerImpl implements ClientManager {
         while (clients.hasNext()) {
             ClientData client = clients.next();
             try {
-                client.response.close();
-                client.response.getOutputStream().close();
+                client.response.getOutputStream().close(); //FIXME: stop asynch response
                 clients.remove();
                 String clientId = (String)client.request.getAttribute("CLIENT_IDENTIFIER");
                 for (ClientManagerListener listener: listeners) {
@@ -86,7 +85,7 @@ public class ClientManagerImpl implements ClientManager {
         }
     }
 
-    public void remove(HttpServletRequest request, Response response) {
+    public void remove(HttpServletRequest request, HttpServletResponse response) {
         registeredClients.remove(new ClientData(request,response));
         String clientId = (String)request.getAttribute("CLIENT_IDENTIFIER");
         for (ClientManagerListener listener: listeners) {
@@ -100,8 +99,8 @@ public class ClientManagerImpl implements ClientManager {
 
     private class ClientData {
         private final HttpServletRequest request;
-        private final Response response;
-        public ClientData(HttpServletRequest request, Response response) {
+        private final HttpServletResponse response;
+        public ClientData(HttpServletRequest request, HttpServletResponse response) {
             this.request = request;
             this.response = response;
         }

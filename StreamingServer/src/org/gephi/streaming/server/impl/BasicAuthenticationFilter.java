@@ -44,9 +44,9 @@ package org.gephi.streaming.server.impl;
 import java.io.IOException;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.gephi.streaming.server.AuthenticationFilter;
-import org.gephi.streaming.server.Response;
 
 /**
  * This is the AuthenticationFilter implementation for the
@@ -76,7 +76,7 @@ public class BasicAuthenticationFilter implements AuthenticationFilter {
         this.password = password;
     }
     
-    public boolean authenticate(HttpServletRequest request, Response response) {
+    public boolean authenticate(HttpServletRequest request, HttpServletResponse response) {
         if (enabled && !doAuthenticate(request, response)) {
             send401(request, response);
             return false;
@@ -84,7 +84,7 @@ public class BasicAuthenticationFilter implements AuthenticationFilter {
             return true;
     }
     
-    private boolean doAuthenticate(HttpServletRequest request, Response response) {
+    private boolean doAuthenticate(HttpServletRequest request, HttpServletResponse response) {
         
         String encoded = request.getHeader("Authorization");
         
@@ -113,14 +113,13 @@ public class BasicAuthenticationFilter implements AuthenticationFilter {
             return false;
     }
     
-    private void send401(HttpServletRequest request, Response response) {
-        response.setCode(401);
-        response.setText("Unauthorized");
-        response.add("WWW-Authenticate", "Basic realm=\""+REALM+"\"");
+    private void send401(HttpServletRequest request, HttpServletResponse response) {
+        response.setStatus(401);
+        response.addHeader("WWW-Authenticate", "Basic realm=\""+REALM+"\"");
         
         try {
-            response.getPrintStream().println("HTTP 401: Authorization Required");
-            response.close();
+            response.getWriter().println("HTTP 401: Authorization Required");
+            response.getOutputStream().close(); // FIXME: remove this
         } catch (IOException e) {}
     }
     
