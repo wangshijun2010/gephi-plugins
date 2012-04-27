@@ -94,6 +94,10 @@ public class ServerControllerImpl implements ServerController {
     public ClientManagerImpl getClientManager() {
         return clientManager;
     }
+    
+    public ServerOperationExecutor getServerOperationExecutor() {
+        return executor;
+    }
 
     /* (non-Javadoc)
      * @see org.gephi.streaming.server.impl.ServerController#handle(org.gephi.streaming.server.Request, org.gephi.streaming.server.Response)

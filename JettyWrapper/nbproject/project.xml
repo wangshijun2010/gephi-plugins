@@ -41,7 +41,12 @@
                 <package>org.eclipse.jetty.util.ssl</package>
                 <package>org.eclipse.jetty.util.statistic</package>
                 <package>org.eclipse.jetty.util.thread</package>
+                <package>org.eclipse.jetty.websocket</package>
             </public-packages>
+            <class-path-extension>
+                <runtime-relative-path>ext/jetty-websocket-8.1.3.v20120416.jar</runtime-relative-path>
+                <binary-origin>release/modules/ext/jetty-websocket-8.1.3.v20120416.jar</binary-origin>
+            </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/jetty-server-8.1.3.v20120416.jar</runtime-relative-path>
                 <binary-origin>release/modules/ext/jetty-server-8.1.3.v20120416.jar</binary-origin>

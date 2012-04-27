@@ -48,16 +48,20 @@ import java.util.Iterator;
 import java.util.List;
 
 import java.util.Map;
+import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.gephi.streaming.server.ClientManager;
+import org.openide.util.Exceptions;
 
 /**
  *
  * @author panisson
  */
 public class ClientManagerImpl implements ClientManager {
+    
+    private static final Logger logger =  Logger.getLogger(ClientManagerImpl.class.getName());
 
     private Map<String, ClientData> registeredClients = new HashMap<String, ClientData>();
     private List<ClientManagerListener> listeners = new ArrayList<ClientManagerListener>();
@@ -80,7 +84,12 @@ public class ClientManagerImpl implements ClientManager {
         Iterator<ClientData> clients = registeredClients.values().iterator();
         while (clients.hasNext()) {
             ClientData client = clients.next();
-            client.request.getAsyncContext().complete();
+            // TODO: verify request status
+            try {
+                client.request.getAsyncContext().complete();
+            } catch (IllegalStateException e) {
+                logger.warning(e.getMessage());
+            }
             clients.remove();
             for (ClientManagerListener listener: listeners) {
                 listener.clientDisconnected(client.clientId);
@@ -97,7 +106,12 @@ public class ClientManagerImpl implements ClientManager {
         
         ClientData client = registeredClients.get(clientId);
         registeredClients.remove(clientId);
-        client.request.getAsyncContext().complete();
+        // TODO: verify request status
+        try {
+            client.request.getAsyncContext().complete();
+        } catch (IllegalStateException e) {
+            logger.warning(e.getMessage());
+        }
         for (ClientManagerListener listener: listeners) {
             listener.clientDisconnected(clientId);
         }

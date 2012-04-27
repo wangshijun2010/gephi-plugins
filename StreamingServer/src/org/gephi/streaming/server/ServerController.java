@@ -43,6 +43,7 @@ package org.gephi.streaming.server;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import org.gephi.streaming.server.impl.ServerOperationExecutor;
 
 /**
  * Controller used by the server to handle requests and responses.
@@ -57,6 +58,8 @@ public interface ServerController {
      * @return the ClientManager to manage client connections.
      */
     public ClientManager getClientManager();
+    
+    public ServerOperationExecutor getServerOperationExecutor();
 
     /**
      * Used by the server to handle requests and responses.

@@ -77,6 +77,7 @@ import org.eclipse.jetty.servlet.ServletHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.servlet.ServletMapping;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
+import org.eclipse.jetty.websocket.WebSocketFactory;
 import org.gephi.streaming.server.AuthenticationFilter;
 import org.gephi.streaming.server.ServerController;
 import org.gephi.streaming.server.StreamingServer;
@@ -274,6 +275,7 @@ public class StreamingServerImpl implements StreamingServer {
         
         private final ServerController serverController;
         private final AuthenticationFilter authenticationFilter;
+        private WebSocketFactory wsFactory;
         
         public ContextContainer(ServerController serverController) {
             this.serverController = serverController;
@@ -283,6 +285,10 @@ public class StreamingServerImpl implements StreamingServer {
             authenticationFilter.setUser(settings.getUser());
             authenticationFilter.setPassword(settings.getPassword());
             authenticationFilter.setAuthenticationEnabled(settings.isBasicAuthentication());
+            
+             wsFactory = new WebSocketFactory(
+                     new GephiWebSocketAcceptor(serverController.getServerOperationExecutor(), 
+                             serverController.getClientManager()));
         }
         
         public ServerController getServerController() {
@@ -292,6 +298,8 @@ public class StreamingServerImpl implements StreamingServer {
         @Override
         public void service(HttpServletRequest request, HttpServletResponse response) 
                 throws ServletException, IOException {
+            
+            if (wsFactory.acceptWebSocket(request, response)) return;
             
             if (!authenticationFilter.authenticate(request, response))
                 return;
