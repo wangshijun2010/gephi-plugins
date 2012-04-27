@@ -49,12 +49,7 @@ import java.net.SocketException;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.servlet.AsyncContext;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.gephi.data.attributes.api.AttributeController;
-
 import org.gephi.data.attributes.api.AttributeRow;
 import org.gephi.data.attributes.api.AttributeValue;
 import org.gephi.data.properties.PropertiesColumn;
@@ -112,20 +107,8 @@ public class ServerOperationExecutor {
      * @param format
      * @param outputStream
      */
-    public void executeGetGraph(final HttpServletRequest request, final HttpServletResponse response) throws IOException {
+    public void executeGetGraph(String format, final String clientId, OutputStream outputStream) throws IOException {
         
-        response.flushBuffer();
-
-        String format = request.getParameter("format");
-        if(format==null) {
-            // Default format is JSON
-            format = "JSON";
-        }
-
-        String close = request.getParameter("close");
-        clientManager.add(request, response);
-
-        OutputStream outputStream = response.getOutputStream();
         final StreamWriter writer = writerFactory.createStreamWriter(format, outputStream);
         writer.startStream();
 
@@ -139,7 +122,7 @@ public class ServerOperationExecutor {
                     if (cause instanceof SocketException || cause instanceof EOFException) {
                         System.out.println("*Socket closed*");
                         graphBufferedOperationSupport.removeHandler(this);
-                        clientManager.remove(request, response);
+                        clientManager.remove(clientId);
                     } else {
                         throw e;
                     }
@@ -148,11 +131,6 @@ public class ServerOperationExecutor {
         };
 
         graphBufferedOperationSupport.addHandler(wrapper);
-
-        if (close == null) {
-            AsyncContext aCtx = request.startAsync();
-            aCtx.setTimeout(-1);
-        }
     }
      
     /**

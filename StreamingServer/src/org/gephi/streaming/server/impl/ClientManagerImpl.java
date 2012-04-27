@@ -43,9 +43,11 @@ Portions Copyrighted 2011 Gephi Consortium.
 package org.gephi.streaming.server.impl;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
+import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -57,34 +59,45 @@ import org.gephi.streaming.server.ClientManager;
  */
 public class ClientManagerImpl implements ClientManager {
 
-    private List<ClientData> registeredClients = new ArrayList<ClientData>();
+    private Map<String, ClientData> registeredClients = new HashMap<String, ClientData>();
     private List<ClientManagerListener> listeners = new ArrayList<ClientManagerListener>();
+    private int idCount = 0;
 
-    public void add(HttpServletRequest request, HttpServletResponse response) {
-        registeredClients.add(new ClientData(request,response));
+    public String add(HttpServletRequest request, HttpServletResponse response) {
         String clientId = request.getRemoteAddr();
+        while (registeredClients.containsKey(clientId)) {
+            clientId = clientId + (idCount++);
+        }
+        registeredClients.put(clientId, new ClientData(clientId, request,response));
         request.setAttribute("CLIENT_IDENTIFIER", clientId);
         for (ClientManagerListener listener: listeners) {
             listener.clientConnected(clientId);
         }
+        return clientId;
     }
 
     public void stopAll() {
-        Iterator<ClientData> clients = registeredClients.iterator();
+        Iterator<ClientData> clients = registeredClients.values().iterator();
         while (clients.hasNext()) {
             ClientData client = clients.next();
             client.request.getAsyncContext().complete();
             clients.remove();
-            String clientId = (String)client.request.getAttribute("CLIENT_IDENTIFIER");
             for (ClientManagerListener listener: listeners) {
-                listener.clientDisconnected(clientId);
+                listener.clientDisconnected(client.clientId);
             }
         }
     }
-
+    
     public void remove(HttpServletRequest request, HttpServletResponse response) {
-        registeredClients.remove(new ClientData(request,response));
         String clientId = (String)request.getAttribute("CLIENT_IDENTIFIER");
+        remove(clientId);
+    }
+
+    public void remove(String clientId) {
+        
+        ClientData client = registeredClients.get(clientId);
+        registeredClients.remove(clientId);
+        client.request.getAsyncContext().complete();
         for (ClientManagerListener listener: listeners) {
             listener.clientDisconnected(clientId);
         }
@@ -97,9 +110,11 @@ public class ClientManagerImpl implements ClientManager {
     private class ClientData {
         private final HttpServletRequest request;
         private final HttpServletResponse response;
-        public ClientData(HttpServletRequest request, HttpServletResponse response) {
+        private final String clientId;
+        public ClientData(String clientId, HttpServletRequest request, HttpServletResponse response) {
             this.request = request;
             this.response = response;
+            this.clientId = clientId;
         }
 
         @Override

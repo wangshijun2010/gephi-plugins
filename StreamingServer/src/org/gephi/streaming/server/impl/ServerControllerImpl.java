@@ -47,6 +47,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import javax.servlet.AsyncContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -146,7 +147,16 @@ public class ServerControllerImpl implements ServerController {
             System.out.println("Handling request for operation "+operation+", format "+format);
             
             if (operation.equals(Operations.GET_GRAPH.getURL())) {
-                executor.executeGetGraph(request, response);
+                response.flushBuffer();
+                String clientId = clientManager.add(request, response);
+                
+                executor.executeGetGraph(format, clientId,  outputStream);
+                
+                String close = request.getParameter("close");
+                if (close == null) {
+                    AsyncContext aCtx = request.startAsync();
+                    aCtx.setTimeout(-1);
+                }
                 
             } else if (operation.equals(Operations.GET_NODE.getURL())) {
                 // gets the node id and write info to output stream

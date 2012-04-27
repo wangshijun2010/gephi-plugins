@@ -51,11 +51,13 @@ import javax.servlet.http.HttpServletResponse;
  */
 public interface ClientManager {
 
-    void add(HttpServletRequest request, HttpServletResponse response);
+    String add(HttpServletRequest request, HttpServletResponse response);
 
     void addClientManagerListener(ClientManagerListener listener);
 
     void remove(HttpServletRequest request, HttpServletResponse response);
+    
+    void remove(String clientId);
 
     void stopAll();
 

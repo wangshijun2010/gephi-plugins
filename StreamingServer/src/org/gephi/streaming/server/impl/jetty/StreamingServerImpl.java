@@ -104,6 +104,7 @@ public class StreamingServerImpl implements StreamingServer {
     private boolean started = false;
 
     public StreamingServerImpl() {
+        settings = new StreamingServerConfig();
     }
     
     public StreamingServerConfig getServerSettings() {
