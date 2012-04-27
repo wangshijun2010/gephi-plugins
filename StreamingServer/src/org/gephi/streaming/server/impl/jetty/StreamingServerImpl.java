@@ -53,10 +53,14 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -64,6 +68,7 @@ import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
 
+import javax.servlet.Servlet;
 import javax.servlet.ServletException;
 import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServlet;
@@ -74,7 +79,9 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.nio.SelectChannelConnector;
 import org.eclipse.jetty.server.ssl.SslSelectChannelConnector;
 import org.eclipse.jetty.servlet.ServletContextHandler;
+import org.eclipse.jetty.servlet.ServletHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
+import org.eclipse.jetty.servlet.ServletMapping;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.gephi.streaming.server.AuthenticationFilter;
 import org.gephi.streaming.server.ServerController;
@@ -96,15 +103,14 @@ public class StreamingServerImpl implements StreamingServer {
     private StreamingServerConfig settings;
     private AuthenticationFilter authenticationFilter;
     
-    private Map<String, ServerController> controllers = Collections.synchronizedMap(new HashMap<String, ServerController>());
+    private Map<String, ContextContainer> containers = 
+            Collections.synchronizedMap(new HashMap<String, ContextContainer>());
     private Server server;
-    private ContextContainer contextContainer;
+    private ServletContextHandler context;
 
     private boolean started = false;
 
     public StreamingServerImpl() {
-        contextContainer = new ContextContainer();
-
         settings = new StreamingServerConfig();
 
         authenticationFilter = new BasicAuthenticationFilter();
@@ -122,7 +128,6 @@ public class StreamingServerImpl implements StreamingServer {
      */
     public void register(ServerController controller, String context) {
         logger.log(Level.INFO, "Registering controller at context {0}", context);
-        controllers.put(context, controller);
 
         if (!this.started) {
             try {
@@ -131,6 +136,10 @@ public class StreamingServerImpl implements StreamingServer {
                 logger.log(Level.SEVERE, null, ex);
             }
         }
+        
+        ContextContainer contextContainer = new ContextContainer(controller);
+        containers.put(context, contextContainer);
+        this.context.addServlet(new ServletHolder(contextContainer), context+"/*");
     }
     
     /* (non-Javadoc)
@@ -138,10 +147,15 @@ public class StreamingServerImpl implements StreamingServer {
      */
     public void unregister(String context) {
         logger.log(Level.INFO, "Unregistering controller at context {0}", context);
-        ServerController controller = controllers.remove(context);
-        controller.stop();
+        ContextContainer contextContainer = containers.remove(context);
+        try {
+            removeServlet(this.context, contextContainer);
+        } catch (ServletException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        contextContainer.getServerController().stop();
 
-        if (controllers.isEmpty()) {
+        if (containers.isEmpty()) {
             try {
                 this.stop();
             } catch (IOException ex) {
@@ -215,9 +229,8 @@ public class StreamingServerImpl implements StreamingServer {
                 }
             }
             
-	    ServletContextHandler context = new ServletContextHandler();
+	    context = new ServletContextHandler();
 	    context.setContextPath("/");
-            context.addServlet(new ServletHolder(contextContainer), "/*");
 	    server.setHandler(context);
             
             try {
@@ -240,9 +253,9 @@ public class StreamingServerImpl implements StreamingServer {
      */
     public synchronized void stop() throws IOException {
 
-        if (!controllers.isEmpty()) {
-            for (ServerController controller: controllers.values()) {
-                controller.stop();
+        if (!containers.isEmpty()) {
+            for (ContextContainer container: containers.values()) {
+                container.getServerController().stop();
             }
         }
         
@@ -270,6 +283,16 @@ public class StreamingServerImpl implements StreamingServer {
     }
 
     private class ContextContainer extends HttpServlet {
+        
+        private final ServerController serverController;
+        
+        public ContextContainer(ServerController serverController) {
+            this.serverController = serverController;
+        }
+        
+        public ServerController getServerController() {
+            return serverController;
+        }
 
         @Override
         public void service(HttpServletRequest request, HttpServletResponse response) 
@@ -278,31 +301,8 @@ public class StreamingServerImpl implements StreamingServer {
             request = new MultiReadHttpServletRequest(request);
             if (!authenticationFilter.authenticate(request, response))
                 return;
-            
-            String context = request.getRequestURI(); // .getPath().getPath();
-            int endIndex = context.indexOf("/", 1);
-            if (endIndex<0) endIndex=context.length();
-            context = context.substring(0, endIndex);
 
-            ServerController controller = controllers.get(context);
-            if (controller==null) {
-                logger.log(Level.WARNING, "Invalid request for context: {0}", context);
-                response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-
-                long time = System.currentTimeMillis();
-                
-                response.addHeader("Content-Type", "text/plain");
-                response.addHeader("Server", "Gephi/0.7 alpha4");
-                response.addHeader("Connection", "close");
-                response.addDateHeader("Date", time);
-                response.addDateHeader("Last-Modified", time);
-                response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-                
-            } else {
-                
-                controller.handle(request, response);
-                
-            }
+            serverController.handle(request, response);
         }
         
     }
@@ -370,6 +370,41 @@ public class StreamingServerImpl implements StreamingServer {
                 throw new IOException("mark/reset not supported");
             }
         }
+
+    }
+
+    private void removeServlet(ServletContextHandler context, Servlet servlet)
+            throws ServletException {
+        ServletHandler handler = context.getServletHandler();
+
+        /* A list of all the servlets that don't implement the class 'servlet',
+        (i.e. They should be kept in the context */
+        List<ServletHolder> servlets = new ArrayList<ServletHolder>();
+
+        /* The names all the servlets that we remove so we can drop the mappings too */
+        Set<String> names = new HashSet<String>();
+
+        for (ServletHolder holder : handler.getServlets()) {
+            /* If it is the class we want to remove, then just keep track of its name */
+            if (servlet.equals(holder.getServlet())) {
+                names.add(holder.getName());
+            } else /* We keep it */ {
+                servlets.add(holder);
+            }
+        }
+
+        List<ServletMapping> mappings = new ArrayList<ServletMapping>();
+
+        for (ServletMapping mapping : handler.getServletMappings()) {
+            /* Only keep the mappings that didn't point to one of the servlets we removed */
+            if (!names.contains(mapping.getServletName())) {
+                mappings.add(mapping);
+            }
+        }
+
+        /* Set the new configuration for the mappings and the servlets */
+        handler.setServletMappings(mappings.toArray(new ServletMapping[0]));
+        handler.setServlets(servlets.toArray(new ServletHolder[0]));
 
     }
 
