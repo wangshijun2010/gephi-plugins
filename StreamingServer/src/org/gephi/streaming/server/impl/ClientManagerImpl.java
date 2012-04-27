@@ -63,12 +63,12 @@ public class ClientManagerImpl implements ClientManager {
     private List<ClientManagerListener> listeners = new ArrayList<ClientManagerListener>();
     private int idCount = 0;
 
-    public String add(HttpServletRequest request, HttpServletResponse response) {
+    public String add(HttpServletRequest request) {
         String clientId = request.getRemoteAddr();
         while (registeredClients.containsKey(clientId)) {
             clientId = clientId + (idCount++);
         }
-        registeredClients.put(clientId, new ClientData(clientId, request,response));
+        registeredClients.put(clientId, new ClientData(clientId, request));
         request.setAttribute("CLIENT_IDENTIFIER", clientId);
         for (ClientManagerListener listener: listeners) {
             listener.clientConnected(clientId);
@@ -88,7 +88,7 @@ public class ClientManagerImpl implements ClientManager {
         }
     }
     
-    public void remove(HttpServletRequest request, HttpServletResponse response) {
+    public void remove(HttpServletRequest request) {
         String clientId = (String)request.getAttribute("CLIENT_IDENTIFIER");
         remove(clientId);
     }
@@ -109,30 +109,10 @@ public class ClientManagerImpl implements ClientManager {
 
     private class ClientData {
         private final HttpServletRequest request;
-        private final HttpServletResponse response;
         private final String clientId;
-        public ClientData(String clientId, HttpServletRequest request, HttpServletResponse response) {
+        public ClientData(String clientId, HttpServletRequest request) {
             this.request = request;
-            this.response = response;
             this.clientId = clientId;
-        }
-
-        @Override
-        public int hashCode() {
-            int hash = 3;
-            hash = 47 * hash + (this.request != null ? this.request.hashCode() : 0);
-            hash = 47 * hash + (this.response != null ? this.response.hashCode() : 0);
-            return hash;
-        }
-        
-        @Override
-        public boolean equals(Object obj) {
-            if ( this == obj ) return true;
-            if ( obj == null || obj.getClass() != this.getClass() ) return false;
-
-            ClientData client = (ClientData)obj;
-            return client.request == this.request &&
-                    client.response == this.response;
         }
     }
 

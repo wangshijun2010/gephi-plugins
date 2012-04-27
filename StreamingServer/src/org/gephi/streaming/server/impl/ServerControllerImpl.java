@@ -148,7 +148,7 @@ public class ServerControllerImpl implements ServerController {
             
             if (operation.equals(Operations.GET_GRAPH.getURL())) {
                 response.flushBuffer();
-                String clientId = clientManager.add(request, response);
+                String clientId = clientManager.add(request);
                 
                 executor.executeGetGraph(format, clientId,  outputStream);
                 
