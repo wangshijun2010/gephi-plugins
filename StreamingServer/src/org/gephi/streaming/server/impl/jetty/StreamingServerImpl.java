@@ -41,12 +41,8 @@ Portions Copyrighted 2011 Gephi Consortium.
  */
 package org.gephi.streaming.server.impl.jetty;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.security.KeyManagementException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -70,10 +66,8 @@ import javax.net.ssl.TrustManagerFactory;
 
 import javax.servlet.Servlet;
 import javax.servlet.ServletException;
-import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.nio.SelectChannelConnector;
@@ -101,7 +95,6 @@ public class StreamingServerImpl implements StreamingServer {
     private static final Logger logger =  Logger.getLogger(StreamingServerImpl.class.getName());
     
     private StreamingServerConfig settings;
-    private AuthenticationFilter authenticationFilter;
     
     private Map<String, ContextContainer> containers = 
             Collections.synchronizedMap(new HashMap<String, ContextContainer>());
@@ -111,12 +104,6 @@ public class StreamingServerImpl implements StreamingServer {
     private boolean started = false;
 
     public StreamingServerImpl() {
-        settings = new StreamingServerConfig();
-
-        authenticationFilter = new BasicAuthenticationFilter();
-        authenticationFilter.setUser(settings.getUser());
-        authenticationFilter.setPassword(settings.getPassword());
-        authenticationFilter.setAuthenticationEnabled(settings.isBasicAuthentication());
     }
     
     public StreamingServerConfig getServerSettings() {
@@ -285,9 +272,16 @@ public class StreamingServerImpl implements StreamingServer {
     private class ContextContainer extends HttpServlet {
         
         private final ServerController serverController;
+        private final AuthenticationFilter authenticationFilter;
         
         public ContextContainer(ServerController serverController) {
             this.serverController = serverController;
+            
+            settings = new StreamingServerConfig();
+            authenticationFilter = new BasicAuthenticationFilter();
+            authenticationFilter.setUser(settings.getUser());
+            authenticationFilter.setPassword(settings.getPassword());
+            authenticationFilter.setAuthenticationEnabled(settings.isBasicAuthentication());
         }
         
         public ServerController getServerController() {
