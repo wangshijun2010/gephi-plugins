@@ -41,7 +41,10 @@ Portions Copyrighted 2011 Gephi Consortium.
  */
 package org.gephi.streaming.server.impl;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 
 import javax.servlet.http.HttpServletRequest;
@@ -49,6 +52,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.gephi.graph.api.Graph;
 import org.gephi.streaming.server.ServerController;
+import org.openide.util.Exceptions;
 
 /**
  * @author panisson
@@ -103,6 +107,28 @@ public class ServerControllerImpl implements ServerController {
         response.setDateHeader("Date", time);
         response.setDateHeader("Last-Modified", time);
         
+        // Collect body data before getting parameters
+        byte[] body;
+        InputStream inputStream = null;
+        try {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            inputStream = request.getInputStream();
+            int read;
+            while ((read = inputStream.read())!=-1) {
+                baos.write(read);
+            }
+            body = baos.toByteArray();
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+            body = new byte[0];
+        } finally {
+            try {
+                inputStream.close();
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        
         try {
 
 
@@ -141,7 +167,7 @@ public class ServerControllerImpl implements ServerController {
                 executor.executeGetEdge(id, format, outputStream);
                 
             } else if (operation.equals(Operations.UPDATE_GRAPH.getURL())) {
-                executor.executeUpdateGraph(format, request.getInputStream(), outputStream);
+                executor.executeUpdateGraph(format, new ByteArrayInputStream(body), outputStream);
             } else {
                 executeError(response, "Invalid operation: "+operation);
                 return;

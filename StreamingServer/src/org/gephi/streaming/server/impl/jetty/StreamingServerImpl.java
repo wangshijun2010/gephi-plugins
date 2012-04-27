@@ -298,79 +298,12 @@ public class StreamingServerImpl implements StreamingServer {
         public void service(HttpServletRequest request, HttpServletResponse response) 
                 throws ServletException, IOException {
             
-            request = new MultiReadHttpServletRequest(request);
             if (!authenticationFilter.authenticate(request, response))
                 return;
 
             serverController.handle(request, response);
         }
         
-    }
-
-    private class MultiReadHttpServletRequest extends HttpServletRequestWrapper {
-
-        private byte[] body;
-
-        public MultiReadHttpServletRequest(HttpServletRequest httpServletRequest) {
-            super(httpServletRequest);
-            // Read the request body and save it as a byte array
-            InputStream inputStream = null;
-            try {
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                inputStream = httpServletRequest.getInputStream();
-                int read;
-                while ((read = inputStream.read())!=-1) {
-                    baos.write(read);
-                }
-                body = baos.toByteArray();
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            } finally {
-                try {
-                    inputStream.close();
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            }
-        }
-
-        @Override
-        public ServletInputStream getInputStream() throws IOException {
-            return new ServletInputStreamImpl(new ByteArrayInputStream(body));
-        }
-
-        @Override
-        public BufferedReader getReader() throws IOException {
-            String enc = getCharacterEncoding();
-            if(enc == null) enc = "UTF-8";
-            return new BufferedReader(new InputStreamReader(getInputStream(), enc));
-        }
-
-        private class ServletInputStreamImpl extends ServletInputStream {
-
-            private InputStream is;
-
-            public ServletInputStreamImpl(InputStream is) {
-                this.is = is;
-            }
-
-            public int read() throws IOException {
-                return is.read();
-            }
-
-            public boolean markSupported() {
-                return false;
-            }
-
-            public synchronized void mark(int i) {
-                throw new RuntimeException(new IOException("mark/reset not supported"));
-            }
-
-            public synchronized void reset() throws IOException {
-                throw new IOException("mark/reset not supported");
-            }
-        }
-
     }
 
     private void removeServlet(ServletContextHandler context, Servlet servlet)
