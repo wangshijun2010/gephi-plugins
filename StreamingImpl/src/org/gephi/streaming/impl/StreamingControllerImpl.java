@@ -214,8 +214,11 @@ public class StreamingControllerImpl implements StreamingController {
 
             URLConnection connection = url.openConnection();
 
-            connection.setRequestProperty("Authorization", "Basic " +
-                    Base64.encodeBase64((endpoint.getUser()+":"+endpoint.getPassword()).getBytes()));
+            // Workaround for Bug https://issues.apache.org/jira/browse/CODEC-89
+            String base64Encoded = Base64.encodeBase64String((endpoint.getUser()+":"+endpoint.getPassword()).getBytes());
+            base64Encoded = base64Encoded.replaceAll("\r\n?", "");
+
+            connection.setRequestProperty("Authorization", "Basic " + base64Encoded);
             
             connection.setDoOutput(true);
             connection.connect();

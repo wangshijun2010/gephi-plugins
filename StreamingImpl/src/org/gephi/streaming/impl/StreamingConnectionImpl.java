@@ -103,9 +103,12 @@ public class StreamingConnectionImpl implements StreamingConnection {
         connection = endpoint.getUrl().openConnection();
 
         if (endpoint.getUser()!=null && endpoint.getUser().length()>0) {
+            
+            // Workaround for Bug https://issues.apache.org/jira/browse/CODEC-89
+            String base64Encoded = Base64.encodeBase64String((endpoint.getUser()+":"+endpoint.getPassword()).getBytes());
+            base64Encoded = base64Encoded.replaceAll("\r\n?", "");
 
-            connection.setRequestProperty("Authorization", "Basic " +
-                    Base64.encodeBase64((endpoint.getUser()+":"+endpoint.getPassword()).getBytes()));
+            connection.setRequestProperty("Authorization", "Basic " + base64Encoded);
 
             // this option is not optimal, as it sets the same authenticator for all connections
 //            Authenticator.setDefault(new Authenticator() {
