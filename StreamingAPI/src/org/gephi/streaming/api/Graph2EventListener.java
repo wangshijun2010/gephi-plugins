@@ -56,6 +56,7 @@ import org.gephi.graph.api.EdgeData;
 import org.gephi.graph.api.Graph;
 import org.gephi.graph.api.GraphEvent;
 import org.gephi.graph.api.GraphListener;
+import org.gephi.graph.api.GraphView;
 import org.gephi.graph.api.Node;
 import org.gephi.graph.api.NodeData;
 import org.gephi.streaming.api.event.ElementType;
@@ -148,6 +149,7 @@ public class Graph2EventListener implements GraphListener, AttributeListener {
 
             Map<String, List<AttributeValue>> nodeChangeTable = new HashMap<String, List<AttributeValue>>();
             Map<String, List<AttributeValue>> edgeChangeTable = new HashMap<String, List<AttributeValue>>();
+            List<AttributeValue> graphChangeList = new ArrayList<AttributeValue>();
 
             for (int i=0; i<event.getData().getTouchedObjects().length; i++) {
                 Object data = event.getData().getTouchedObjects()[i];
@@ -180,9 +182,22 @@ public class Graph2EventListener implements GraphListener, AttributeListener {
                         edgeChangeTable.put(id, values);
                     }
                     values.add(value);
+                } else if (data instanceof GraphView) {
+                    graphChangeList.add(value);
+                    
                 } else {
                     throw new RuntimeException("Unrecognized graph object type");
                 }
+            }
+            
+            Map<String, Object> graphAttributes = new HashMap<String, Object>();
+            for (AttributeValue value: graphChangeList) {
+                graphAttributes.put(value.getColumn().getTitle(), value.getValue());
+            }
+            if (!graphAttributes.isEmpty()) {
+                org.gephi.streaming.api.event.GraphEvent streamingEvent =
+                        eventBuilder.graphEvent(ElementType.GRAPH, EventType.CHANGE, null, graphAttributes);
+                eventHandler.handleGraphEvent(streamingEvent);
             }
             
             for (Map.Entry<String, List<AttributeValue>> entry: nodeChangeTable.entrySet()) {

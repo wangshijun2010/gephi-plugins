@@ -96,6 +96,9 @@ public class JSONStreamWriter extends StreamWriter {
             JSONObject o = null;
 
             switch (event.getElementType()) {
+            case GRAPH:
+                o = graphAttributeChanged(elementEvent.getAttributes());
+                break;
             case NODE:
                 
                 switch (event.getEventType()) {
@@ -166,36 +169,15 @@ public class JSONStreamWriter extends StreamWriter {
     protected void outputEndOfFile() {
     }
 
-    private JSONObject graphAttributeAdded(String attribute, Object value) {
-        return graphAttributeChanged(attribute, null, value);
-    }
-
-    private JSONObject graphAttributeChanged(String attribute, Object oldValue,
-            Object newValue) {
+    private JSONObject graphAttributeChanged(Map<String, Object> attributes) {
         try {
+            JSONObject graphData = createGraphData(attributes);
             return new JSONObject()
-                        .put(Types.CG.value(), new JSONObject()
-                            .put(attribute, newValue)
-                            );
+                        .put(Types.CG.value(), graphData);
         } catch (JSONException e) {
             logger.log(Level.WARNING, "Unable to write JSONObject for "
-                    + "graphAttributeChanged event, "
-                    + "attribute {0} with value {1}: {2}",
-                    new Object[]{attribute, newValue.toString(), e.getMessage()});
-            return null;
-        }
-    }
-
-    private JSONObject graphAttributeRemoved(String attribute) {
-        try {
-            return new JSONObject()
-                        .put(Types.CG.value(), new JSONObject()
-                            .put(attribute, JSONObject.NULL)
-                            );
-        } catch (JSONException e) {
-            logger.log(Level.WARNING, "Unable to write JSONObject for "
-                    + "graphAttributeRemoved event, attribute {0}: {1}",
-                    new Object[]{attribute, e.getMessage()});
+                    + "graphAttributeChanged event: {0}",
+                    new Object[]{e.getMessage()});
             return null;
         }
     }
@@ -281,6 +263,19 @@ public class JSONStreamWriter extends StreamWriter {
                     new Object[]{nodeId, e.getMessage()});
             return null;
         }
+    }
+    
+    private JSONObject createGraphData(Map<String, Object> attributes) 
+            throws JSONException {
+
+        JSONObject attributesJObject = new JSONObject();
+        if (attributes != null && attributes.size() > 0) {
+            for (Map.Entry<String, Object> entry : attributes.entrySet()) {
+                attributesJObject.put(entry.getKey(), entry.getValue());
+            }
+        }
+
+        return attributesJObject;
     }
     
     private JSONObject createNodeData(String nodeId,
