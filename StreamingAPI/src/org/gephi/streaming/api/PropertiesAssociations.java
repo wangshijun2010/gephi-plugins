@@ -59,7 +59,7 @@ public final class PropertiesAssociations implements Serializable {
 
     public enum EdgeProperties {
 
-        R, G, B, COLOR, WEIGHT, ID, LABEL, ALPHA, SOURCE, TARGET;
+        R, G, B, COLOR, WEIGHT, ID, LABEL, ALPHA, SOURCE, TARGET, SIZE;
     }
     //PropertiesAssociations association
     private List<PropertyAssociation<NodeProperties>> nodePropertyAssociations = new LinkedList<PropertyAssociation<NodeProperties>>();

@@ -108,6 +108,7 @@ public class GraphUpdaterEventHandler implements GraphEventHandler {
         properties.addEdgePropertyAssociation(EdgeProperties.G, "g");
         properties.addEdgePropertyAssociation(EdgeProperties.B, "b");
         properties.addEdgePropertyAssociation(EdgeProperties.COLOR, "color");
+        properties.addEdgePropertyAssociation(EdgeProperties.SIZE, "size");
     }
 
     /**
@@ -463,6 +464,10 @@ public class GraphUpdaterEventHandler implements GraphEventHandler {
                 edge.getEdgeData().setR(((i >> 16) & 0xFF)/255.f);
                 edge.getEdgeData().setG(((i >> 8) & 0xFF)/255.f);
                 edge.getEdgeData().setB((i & 0xFF)/255.f);
+                break;
+            case SIZE:
+                float size = Float.valueOf(value.toString());
+                edge.getEdgeData().setSize(size);
                 break;
         }
     }

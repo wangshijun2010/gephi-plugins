@@ -51,7 +51,16 @@ import java.net.URL;
 import java.util.LinkedList;
 import org.gephi.filters.spi.EdgeFilter;
 import org.gephi.filters.spi.NodeFilter;
+import org.gephi.graph.api.Edge;
+import org.gephi.graph.api.Graph;
+import org.gephi.graph.api.GraphController;
+import org.gephi.graph.api.GraphModel;
+import org.gephi.graph.api.Node;
+import org.gephi.project.api.Project;
+import org.gephi.project.api.ProjectController;
+import org.gephi.project.api.Workspace;
 import org.gephi.streaming.api.GraphEventHandler;
+import org.gephi.streaming.api.GraphUpdaterEventHandler;
 import org.gephi.streaming.api.event.GraphEventBuilder;
 import org.gephi.streaming.api.StreamReader;
 import org.gephi.streaming.api.StreamReaderFactory;
@@ -223,6 +232,86 @@ public class JSONStreamReaderTest {
             t.join(1000);
         } catch (InterruptedException ex) { }
         assertTrue(t.getState() == t.getState().TERMINATED);
+    }
+    
+    @Test
+    public void testChangeNodeAttribute() throws IOException {
+        // Get active graph instance - Project and Graph API
+        ProjectController projectController = Lookup.getDefault().lookup(ProjectController.class);
+        Project project = projectController.getCurrentProject();
+        if (project==null)
+            projectController.newProject();
+        Workspace workspace = projectController.getCurrentWorkspace();
+        if (workspace==null)
+            workspace = projectController.newWorkspace(projectController.getCurrentProject());
+
+        GraphController graphController = Lookup.getDefault().lookup(GraphController.class);
+        GraphModel graphModel = graphController.getModel();
+        Graph graph = graphModel.getHierarchicalMixedGraph();
+        
+        GraphEventHandler handler = new GraphUpdaterEventHandler(graph);
+
+        StreamReaderFactory factory = Lookup.getDefault().lookup(StreamReaderFactory.class);
+        GraphEventBuilder eventBuilder = new GraphEventBuilder(this);
+        StreamReader streamReader = factory.createStreamReader(streamType, handler, eventBuilder);
+        
+        String evstr = "{\"an\":{\"A\":{\"label\":\"Streaming Node A\",\"size\":2}}}\n\r";
+        evstr += "{\"cn\":{\"A\":{\"label\":\"Streaming Node A changed\",\"size\":3, \"key\":\"value\"}}}\n\r";
+        ByteArrayInputStream bais = new ByteArrayInputStream(evstr.getBytes());
+        
+        streamReader.processStream(bais);
+        try {
+            Thread.sleep(50);
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        
+        Node a = graph.getNode("A");
+        
+        assertEquals(3.0, a.getNodeData().getSize(), 0.0);
+        assertEquals(a.getNodeData().getAttributes().getValue("key"), "value");
+        
+    }
+    
+    @Test
+    public void testChangeEdgeAttribute() throws IOException {
+        // Get active graph instance - Project and Graph API
+        ProjectController projectController = Lookup.getDefault().lookup(ProjectController.class);
+        Project project = projectController.getCurrentProject();
+        if (project==null)
+            projectController.newProject();
+        Workspace workspace = projectController.getCurrentWorkspace();
+        if (workspace==null)
+            workspace = projectController.newWorkspace(projectController.getCurrentProject());
+
+        GraphController graphController = Lookup.getDefault().lookup(GraphController.class);
+        GraphModel graphModel = graphController.getModel();
+        Graph graph = graphModel.getHierarchicalMixedGraph();
+        
+        GraphEventHandler handler = new GraphUpdaterEventHandler(graph);
+
+        StreamReaderFactory factory = Lookup.getDefault().lookup(StreamReaderFactory.class);
+        GraphEventBuilder eventBuilder = new GraphEventBuilder(this);
+        StreamReader streamReader = factory.createStreamReader(streamType, handler, eventBuilder);
+        
+        String evstr = "{\"an\":{\"A\":{\"label\":\"Streaming Node A\",\"size\":2}}}\n\r";
+        evstr += "{\"an\":{\"B\":{\"label\":\"Streaming Node B\",\"size\":2}}}\n\r";
+        evstr += "{\"ae\":{\"AB\":{\"source\":\"A\",\"target\":\"B\",\"directed\":false,\"label\":\"Edge AB\",\"size\":2}}}\n\r";
+        evstr += "{\"ce\":{\"AB\":{\"label\":\"Edge AB changed\",\"size\":3, \"key\":\"value\"}}}\n\r";
+        ByteArrayInputStream bais = new ByteArrayInputStream(evstr.getBytes());
+        
+        streamReader.processStream(bais);
+        try {
+            Thread.sleep(50);
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        
+        Edge ab = graph.getEdge("AB");
+        
+        assertEquals(3.0, ab.getEdgeData().getSize(), 0.0);
+        assertEquals(ab.getEdgeData().getAttributes().getValue("key"), "value");
+        
     }
     
     @Test
