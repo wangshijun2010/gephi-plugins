@@ -144,6 +144,9 @@ public class GraphUpdaterEventHandler implements GraphEventHandler {
             ElementEvent elementEvent = (ElementEvent)event;
 
             switch (event.getElementType()) {
+            case GRAPH:
+                this.graphChanged(elementEvent.getAttributes());
+                break;
             case NODE:
                 switch (event.getEventType()) {
                     case ADD:
@@ -187,6 +190,18 @@ public class GraphUpdaterEventHandler implements GraphEventHandler {
             report.logIssue(issue);
         }
         logger.warning(message);
+    }
+    
+    private void graphChanged(Map<String, Object> attributes) {
+        graph.writeLock();
+
+        if (attributes!=null && attributes.size() > 0) {
+            for(Map.Entry<String, Object> entry: attributes.entrySet()) {
+                graph.getAttributes().setValue(entry.getKey(), entry.getValue());
+            }
+        }
+
+        graph.writeUnlock();
     }
 
     private void edgeAdded(String edgeId, String fromNodeId, String toNodeId,

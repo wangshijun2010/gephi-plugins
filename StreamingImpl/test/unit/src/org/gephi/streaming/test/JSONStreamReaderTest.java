@@ -270,6 +270,40 @@ public class JSONStreamReaderTest {
         
         assertEquals(3.0, a.getNodeData().getSize(), 0.0);
         assertEquals(a.getNodeData().getAttributes().getValue("key"), "value");
+    }
+    
+    @Test
+    public void testChangeGraphAttribute() throws IOException {
+        // Get active graph instance - Project and Graph API
+        ProjectController projectController = Lookup.getDefault().lookup(ProjectController.class);
+        Project project = projectController.getCurrentProject();
+        if (project==null)
+            projectController.newProject();
+        Workspace workspace = projectController.getCurrentWorkspace();
+        if (workspace==null)
+            workspace = projectController.newWorkspace(projectController.getCurrentProject());
+
+        GraphController graphController = Lookup.getDefault().lookup(GraphController.class);
+        GraphModel graphModel = graphController.getModel();
+        Graph graph = graphModel.getHierarchicalMixedGraph();
+        
+        GraphEventHandler handler = new GraphUpdaterEventHandler(graph);
+
+        StreamReaderFactory factory = Lookup.getDefault().lookup(StreamReaderFactory.class);
+        GraphEventBuilder eventBuilder = new GraphEventBuilder(this);
+        StreamReader streamReader = factory.createStreamReader(streamType, handler, eventBuilder);
+        
+        String evstr = "{\"cg\":{\"label\":\"Graph Label\"}}\n\r";
+        ByteArrayInputStream bais = new ByteArrayInputStream(evstr.getBytes());
+        
+        streamReader.processStream(bais);
+        try {
+            Thread.sleep(50);
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        
+        assertEquals("Graph Label", graph.getAttributes().getValue("label"));
         
     }
     
