@@ -11,6 +11,7 @@ import java.util.prefs.Preferences;
 /**
  *
  * @author shale
+ * @author wangshijun
  */
 public class ConfigFile implements Serializable{
     
@@ -90,14 +91,9 @@ public class ConfigFile implements Serializable{
         map.put("minEdgeSize", 0.2);
         map.put("maxEdgeSize", 0.5);
         sigma.put("graphProperties", map);
-        
-        
-        
     }
-    
-    
 
-    public HashMap<String, Object> getLogo() {
+	public HashMap<String, Object> getLogo() {
         return logo;
     }
 
@@ -153,16 +149,24 @@ public class ConfigFile implements Serializable{
         features.put("search",Boolean.valueOf(props.get("features.search","true")));
         
         String hover = props.get("features.hoverBehavior","default");
-        if (hover.indexOf("None")!=-1) hover="default";
+        if (hover.indexOf("None")!=-1) {
+			hover="default";
+		}
         features.put("hoverBehavior",hover);
         
         String group = props.get("features.groupSelectAttribute",null);
-        if (group==null || group.indexOf("None")!=-1) features.put("groupSelectorAttribute",false);
-        else features.put("groupSelectorAttribute",group);        
+        if (group==null || group.indexOf("None")!=-1) {
+			features.put("groupSelectorAttribute",false);
+		} else {
+			features.put("groupSelectorAttribute",group);
+		}        
         
         String img = props.get("informationPanel.imageAttribute",null);
-        if (img==null || img.indexOf("None")!=-1) informationPanel.put("imageAttribute",false);
-        else informationPanel.put("imageAttribute",img);   
+        if (img==null || img.indexOf("None")!=-1) {
+			informationPanel.put("imageAttribute",false);
+		} else {
+			informationPanel.put("imageAttribute",img);
+		}   
         
         informationPanel.put("groupByEdgeDirection",Boolean.valueOf(props.get("informationPanel.groupByEdgeDirection","false")));
         

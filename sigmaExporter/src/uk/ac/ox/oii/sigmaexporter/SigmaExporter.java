@@ -19,6 +19,11 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Writer;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URL;
 import java.nio.file.FileSystem;
@@ -70,8 +75,6 @@ public class SigmaExporter implements Exporter, LongTask {
             final File pathFile = new File(path);
             if (pathFile.getParentFile().exists()) {
 
-                FileWriter writer = null;
-
                 //Copy resource template
                 try {
                     InputStream zipStream = SigmaExporter.class.getResourceAsStream("resources/network.zip"); //uk/ac/ox/oii/sigmaexporter/resources/network/index.html
@@ -84,14 +87,15 @@ public class SigmaExporter implements Exporter, LongTask {
                     e.printStackTrace();
                     throw new RuntimeException(e);
                 }
-
-
+				
                 //Gson to handle JSON writing and escape
                 Gson gson = new Gson();
+				OutputStreamWriter writer = null;
                     
                 //Write config.json
                 try {
-                    writer = new FileWriter(pathFile.getAbsolutePath() + "/network/config.json");
+                    // writer = new FileWriter(pathFile.getAbsolutePath() + "/network/config.json");
+					writer = new OutputStreamWriter(new FileOutputStream(pathFile.getAbsolutePath() + "/network/config.json"), "UTF-8");
                     gson.toJson(config, writer);
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -188,7 +192,8 @@ public class SigmaExporter implements Exporter, LongTask {
                     }
 
 
-                    writer = new FileWriter(pathFile.getAbsolutePath() + "/network/data.json");
+                    // writer = new FileWriter(pathFile.getAbsolutePath() + "/network/data.json");
+					writer = new OutputStreamWriter(new FileOutputStream(pathFile.getAbsolutePath() + "/network/data.json"), "UTF-8");
                     HashMap<String, HashSet<GraphElement>> json = new HashMap<String, HashSet<GraphElement>>();
                     json.put("nodes", jNodes);
                     json.put("edges", jEdges);
