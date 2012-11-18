@@ -8,6 +8,8 @@
  Website : http://www.gephi.org
 
  Contributor(s):
+ * 
+ * @author wangshijun <wangshijun2010@gmail.com>
 
  Portions Copyrighted 2011 Gephi Consortium.
  */
@@ -95,7 +97,7 @@ public class SigmaExporter implements Exporter, LongTask {
                 //Write config.json
                 try {
                     // writer = new FileWriter(pathFile.getAbsolutePath() + "/network/config.json");
-					writer = new OutputStreamWriter(new FileOutputStream(pathFile.getAbsolutePath() + "/network/config.json"), "UTF-8");
+					writer = new OutputStreamWriter(new FileOutputStream(pathFile.getAbsolutePath() + "/config.json"), "UTF-8");
                     gson.toJson(config, writer);
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -106,7 +108,6 @@ public class SigmaExporter implements Exporter, LongTask {
                         writer = null;
                     }
                 }
-
 
                 //Write data.json
                 try {
@@ -166,7 +167,6 @@ public class SigmaExporter implements Exporter, LongTask {
                         Progress.progress(progress);
                     }
 
-
                     //Export edges. Progress is incremented at each step.
                     HashSet<GraphElement> jEdges = new HashSet<GraphElement>();
                     Edge[] edgeArray = graph.getEdges().toArray();
@@ -191,9 +191,8 @@ public class SigmaExporter implements Exporter, LongTask {
                         Progress.progress(progress);
                     }
 
-
                     // writer = new FileWriter(pathFile.getAbsolutePath() + "/network/data.json");
-					writer = new OutputStreamWriter(new FileOutputStream(pathFile.getAbsolutePath() + "/network/data.json"), "UTF-8");
+					writer = new OutputStreamWriter(new FileOutputStream(pathFile.getAbsolutePath() + "/data.json"), "UTF-8");
                     HashMap<String, HashSet<GraphElement>> json = new HashMap<String, HashSet<GraphElement>>();
                     json.put("nodes", jNodes);
                     json.put("edges", jEdges);
